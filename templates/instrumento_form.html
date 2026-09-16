@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="space-y-6">
+  <div class="flex items-center space-x-3 mb-4">
+    <i class="fa-solid fa-guitar text-2xl text-brand-red"></i>
+    <h2 class="text-2xl font-bold text-slate-800">Cadastro de instrumentos</h2>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+      <form method="POST" action="{{ url_for('instrumento_novo') }}" class="space-y-4">
+        {{ form.hidden_tag() }}
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nome do instrumento</label>
+          {{ form.nome(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm", placeholder="Ex.: Violino, Flauta Transversal") }}
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Código do instrumento</label>
+            {{ form.codigo(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm", placeholder="Ex.: INST-0001") }}
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Identificação do instrumento</label>
+            {{ form.identificacao(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm", placeholder="Ex.: Número de série ou marcação") }}
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Modelo</label>
+            {{ form.modelo(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm", placeholder="Ex.: Yamaha YTR-2330") }}
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Categoria</label>
+            {{ form.categoria(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm") }}
+          </div>
+        </div>
+
+        <div class="flex justify-start space-x-4 pt-6">
+          <a href="{{ url_for('dashboard') }}" class="px-6 py-2.5 border border-brand-red text-brand-red rounded-lg font-semibold text-sm hover:bg-red-50 transition">
+            <i class="fa-solid fa-xmark mr-1"></i> Cancelar
+          </a>
+          <button type="submit" class="px-6 py-2.5 bg-brand-green text-white rounded-lg font-semibold text-sm hover:bg-green-700 transition shadow">
+            Salvar Instrumento
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Card Lateral de Disponibilidade -->
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+      <div>
+        <h3 class="font-bold text-slate-800 text-base mb-1">Resumo de disponibilidade</h3>
+        <p class="text-xs text-slate-500 mb-6">Visão geral dos instrumentos cadastrados</p>
+
+        <div class="space-y-4">
+          <div class="flex justify-between items-center border-b pb-2">
+            <span class="text-sm font-medium text-slate-600">Disponíveis</span>
+            <span class="text-sm font-bold text-emerald-600">{{ disponiveis }}</span>
+          </div>
+          <div class="flex justify-between items-center border-b pb-2">
+            <span class="text-sm font-medium text-slate-600">Emprestados</span>
+            <span class="text-sm font-bold text-amber-600">{{ emprestados }}</span>
+          </div>
+          <div class="flex justify-between items-center border-b pb-2">
+            <span class="text-sm font-medium text-slate-600">Manutenção</span>
+            <span class="text-sm font-bold text-red-600">{{ manutencao }}</span>
+          </div>
+          <div class="flex justify-between items-center pt-2">
+            <span class="text-base font-bold text-slate-800">Total de instrumentos</span>
+            <span class="text-base font-extrabold text-slate-900">{{ total }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-8 pt-4 border-t border-slate-100 text-[11px] text-slate-400">
+        <i class="fa-regular fa-clock mr-1"></i>
+        <span>Dados atualizados: <strong>Hoje, {{ agora.strftime('%d de %B de %Y às %H:%M') }}</strong></span>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

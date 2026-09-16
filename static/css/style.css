@@ -1,0 +1,44 @@
+:root {
+    --brand-red: #8C1D27;
+    --brand-red-hover: #72161E;
+    --brand-green: #217A42;
+    --brand-green-hover: #1A6234;
+  }
+  
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  
+  .bg-brand-red {
+    background-color: var(--brand-red);
+  }
+  
+  .text-brand-red {
+    color: var(--brand-red);
+  }
+  
+  .border-brand-red {
+    border-color: var(--brand-red);
+  }
+  
+  .bg-brand-green {
+    background-color: var(--brand-green);
+  }
+  
+  .bg-brand-green:hover {
+    background-color: var(--brand-green-hover);
+  }
+  
+  .text-brand-green {
+    color: var(--brand-green);
+  }
+  
+  /* Estilo do Menu Ativo na Sidebar */
+  .nav-link.active {
+    background-color: var(--brand-red);
+    color: #ffffff !important;
+  }
+  
+  .nav-link.active i {
+    color: #ffffff !important;
+  }
