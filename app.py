@@ -1,8 +1,9 @@
 import os
-
+from wtforms.validators import DataRequired, Optional, Regexp, ValidationError
+from wtforms import StringField, PasswordField, SubmitField, SelectField, DateField, TextAreaField, BooleanField
 os.environ['PGCLIENTENCODING'] = 'utf-8'
 os.environ['PGTZ'] = 'UTC'
-from datetime import datetime
+from datetime import datetime, date
 from functools import wraps
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash, session
@@ -85,12 +86,6 @@ class Evento(db.Model):
     local = db.Column(db.String(150), nullable=False)
     descricao = db.Column(db.Text)
 
-class LoginForm(FlaskForm):
-    email = StringField('E-mail', validators=[DataRequired(), Email()])
-    senha = PasswordField('Senha', validators=[DataRequired()])
-    lembrar = BooleanField('Lembrar de mim')
-    submit = SubmitField('Entrar')
-
 # ==========================================
 # FORMULÁRIOS (WTFORMS)
 # ==========================================
@@ -98,13 +93,67 @@ class LoginForm(FlaskForm):
 class LoginForm(FlaskForm):
     email = StringField('E-mail', validators=[DataRequired(), Email()])
     senha = PasswordField('Senha', validators=[DataRequired()])
+    lembrar = BooleanField('Lembrar de mim')
     submit = SubmitField('Entrar')
 
+def validar_idade_minima(form, field):
+    if field.data:
+        hoje = date.today()
+        # Calcula a idade exata considerando mês e dia
+        idade = hoje.year - field.data.year - ((hoje.month, hoje.day) < (field.data.month, field.data.day))
+        if idade < 15:
+            raise ValidationError("O aluno deve ter no mínimo 15 anos de idade.")
+
+def get_data_maxima_15_anos():
+    hoje = date.today()
+    try:
+        return hoje.replace(year=hoje.year - 15).isoformat()
+    except ValueError: # Trata ano bissexto (29 de fevereiro)
+        return hoje.replace(year=hoje.year - 15, day=28).isoformat()
+
+
 class AlunoForm(FlaskForm):
-    nome = StringField('Nome Completo', validators=[DataRequired()])
-    cpf = StringField('CPF', validators=[DataRequired(), Length(min=11, max=14)])
-    telefone = StringField('Telefone', validators=[DataRequired()])
-    instrumento_estudo = StringField('Instrumento de Estudo', validators=[DataRequired()])
+    nome = StringField('Nome', validators=[DataRequired(message="O nome é obrigatório")])
+    cpf = StringField('CPF')
+    email = StringField('E-mail')
+    celular = StringField(
+        'Celular',
+        validators=[
+            DataRequired(message="O celular é obrigatório."),
+            Regexp(r'^\(d{2}\)\d{8,9}$', message="O celular deve estar no formato (84)9XXXXXXX.")
+        ],
+        render_kw={
+            "maxlength": "13",
+            "oninput": r"this.value = this.value.replace(/\D/g, '').replace(/^(\d{2})(\d)/, '($1)$2').substring(0, 13)",
+            "placeholder": "Ex: (00)999998888"
+        }
+        )
+    data_nascimento = DateField(
+        'Data de Nascimento', 
+        validators=[
+            DataRequired(message="A data de nascimento é obrigatória."),
+            validar_idade_minima
+            ],
+        render_kw={
+            "max": get_data_maxima_15_anos(),
+            "min": "1900-01-01"
+        }
+        )
+    rua = StringField('Rua')
+    numero = StringField(
+        'Número',
+        validators=[
+            Optional(),
+            Regexp(r'^\d+$',message="Digite apenas números")
+        ],
+        render_kw={
+            "type": "number",
+            "min": "0",
+            "oninput": "this.value = this.value.replace(/[^0-9]/g, '')",
+            "placeholder": "Ex: 123"
+        }
+    )
+    bairro = StringField('Bairro')
     submit = SubmitField('Salvar')
 
 class InstrumentoForm(FlaskForm):
@@ -212,6 +261,21 @@ def novo_instrumento():
         flash('Instrumento cadastrado com sucesso!', 'success')
         return redirect(url_for('listar_instrumentos'))
     return render_template('instrumento_form.html', form=form)
+
+@app.route('/emprestimos')
+@login_required
+def listar_emprestimos():
+    return render_template('dashboard.html')
+
+@app.route('/emprestimos/novo', methods=['GET', 'POST'])
+@login_required
+def novo_emprestimo():
+    return render_template('novo_emprestimo.html')
+
+@app.route('/eventos/novo', methods=['GET', 'POST'])
+@login_required
+def novo_evento():
+    return render_template('dashboard.html')
 
 # ==========================================
 # INICIALIZAÇÃO AUTOMÁTICA

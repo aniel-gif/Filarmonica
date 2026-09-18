@@ -33,22 +33,22 @@
           <span>Início</span>
         </a>
 
-        <a href="{{ url_for('aluno_novo') }}" class="nav-link {% if request.endpoint == 'aluno_novo' %}active{% endif %} w-full flex items-center px-4 py-3 text-slate-700 rounded-lg hover:bg-slate-100 font-medium text-sm transition">
+        <a href="{{ url_for('novo_aluno') }}" class="nav-link {% if request.endpoint == 'aluno_novo' %}active{% endif %} w-full flex items-center px-4 py-3 text-slate-700 rounded-lg hover:bg-slate-100 font-medium text-sm transition">
           <i class="fa-solid fa-user-group w-6 text-lg"></i>
           <span>Cadastro de alunos</span>
         </a>
 
-        <a href="{{ url_for('instrumento_novo') }}" class="nav-link {% if request.endpoint == 'instrumento_novo' %}active{% endif %} w-full flex items-center px-4 py-3 text-slate-700 rounded-lg hover:bg-slate-100 font-medium text-sm transition">
+        <a href="{{ url_for('novo_instrumento') }}" class="nav-link {% if request.endpoint == 'instrumento_novo' %}active{% endif %} w-full flex items-center px-4 py-3 text-slate-700 rounded-lg hover:bg-slate-100 font-medium text-sm transition">
           <i class="fa-solid fa-guitar w-6 text-lg"></i>
           <span>Cadastro de instrumentos</span>
         </a>
 
-        <a href="{{ url_for('emprestimo_novo') }}" class="nav-link {% if request.endpoint == 'emprestimo_novo' %}active{% endif %} w-full flex items-center px-4 py-3 text-slate-700 rounded-lg hover:bg-slate-100 font-medium text-sm transition">
+        <a href="{{ url_for('novo_emprestimo') }}" class="nav-link {% if request.endpoint == 'emprestimo_novo' %}active{% endif %} w-full flex items-center px-4 py-3 text-slate-700 rounded-lg hover:bg-slate-100 font-medium text-sm transition">
           <i class="fa-solid fa-hand-holding-hand w-6 text-lg"></i>
           <span>Empréstimos</span>
         </a>
 
-        <a href="{{ url_for('evento_novo') }}" class="nav-link {% if request.endpoint == 'evento_novo' %}active{% endif %} w-full flex items-center px-4 py-3 text-slate-700 rounded-lg hover:bg-slate-100 font-medium text-sm transition">
+        <a href="{{ url_for('novo_evento') }}" class="nav-link {% if request.endpoint == 'evento_novo' %}active{% endif %} w-full flex items-center px-4 py-3 text-slate-700 rounded-lg hover:bg-slate-100 font-medium text-sm transition">
           <i class="fa-regular fa-calendar-days w-6 text-lg"></i>
           <span>Eventos</span>
         </a>
