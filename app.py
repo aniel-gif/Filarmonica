@@ -12,12 +12,15 @@ from datetime import datetime
 from functools import wraps
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash, session
+from models import db
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from flask_wtf.csrf import CSRFProtect
 from wtforms import StringField, PasswordField, SubmitField, SelectField, DateField, TextAreaField
 from wtforms.validators import DataRequired, Email, Length
 from werkzeug.security import generate_password_hash, check_password_hash
+
+from models import db, Aluno, Instrumento, Emprestimo, Evento, Usuario
 
 # 1. Carregar variáveis de ambiente
 load_dotenv()
@@ -34,8 +37,13 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'filarmonica-secret-key-123456')
 
 # 3. Inicialização das Extensões
-db = SQLAlchemy(app)
+db.init_app(app)
 csrf = CSRFProtect(app)
+
+# 4. Criação automática das tabelas no PostgreSQL
+with app.app_context():
+    db.create_all()
+
 
 # ==========================================
 # MODELOS (BANCO DE DADOS)
@@ -66,17 +74,7 @@ class Instrumento(db.Model):
     numero_serie = db.Column(db.String(50), unique=True)
     status = db.Column(db.String(20), default='Disponível')  # Disponível, Emprestado, Manutenção
 
-class Emprestimo(db.Model):
-    __tablename__ = 'emprestimos'
-    id = db.Column(db.Integer, primary_key=True)
-    aluno_id = db.Column(db.Integer, db.ForeignKey('alunos.id'), nullable=False)
-    instrumento_id = db.Column(db.Integer, db.ForeignKey('instrumentos.id'), nullable=False)
-    data_emprestimo = db.Column(db.DateTime, default=datetime.utcnow)
-    data_devolucao = db.Column(db.DateTime, nullable=True)
-    status = db.Column(db.String(20), default='Ativo')  # Ativo, Devolvido
 
-    aluno = db.relationship('Aluno', backref=db.backref('emprestimos', lazy=True))
-    instrumento = db.relationship('Instrumento', backref=db.backref('emprestimos', lazy=True))
 
 class Evento(db.Model):
     __tablename__ = 'eventos'

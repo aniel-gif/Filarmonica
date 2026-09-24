@@ -1,64 +1,64 @@
-from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 db = SQLAlchemy()
 
-class Usuario(db.Model):
-    __tablename__ = 'usuarios'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False, index=True)
-    senha_hash = db.Column(db.String(255), nullable=False)
-    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
-
+# Tabela Aluno[cite: 1]
 class Aluno(db.Model):
-    __tablename__ = 'alunos'
+    __tablename__ = 'aluno'
     
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(150), nullable=False, index=True)
-    endereco = db.Column(db.String(255), nullable=False)
-    celular = db.Column(db.String(20), nullable=False)
-    data_nascimento = db.Column(db.Date, nullable=False)
-    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
+    id_aluno = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    nome_completo = db.Column(db.String(150), nullable=False)
+    endereco = db.Column(db.String(200))
+    telefone = db.Column(db.String(20))
+    data_nascimento = db.Column(db.Date)
     
-    emprestimos = db.relationship('Emprestimo', backref='aluno', lazy=True, cascade="all, delete-orphan")
+    # Relacionamento com Empréstimos[cite: 1]
+    emprestimos = db.relationship('Emprestimo', backref='aluno', lazy=True)
 
+# Tabela Instrumento[cite: 1]
 class Instrumento(db.Model):
-    __tablename__ = 'instrumentos'
+    __tablename__ = 'instrumento'
     
-    id = db.Column(db.Integer, primary_key=True)
+    id_instrumento = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nome = db.Column(db.String(100), nullable=False)
-    codigo = db.Column(db.String(50), unique=True, nullable=False, index=True)
-    identificacao = db.Column(db.String(100), nullable=True)
-    modelo = db.Column(db.String(100), nullable=True)
-    categoria = db.Column(db.String(50), nullable=False)  # Sopro, Cordas, Teclas, Percussão
-    status = db.Column(db.String(30), default='Disponível', nullable=False)  # Disponível, Emprestado, Manutenção
-    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
+    categoria = db.Column(db.String(100))
+    marca = db.Column(db.String(100))
+    modelo = db.Column(db.String(100))
+    numero_serie = db.Column(db.String(100))
+    estado = db.Column(db.String(50))
+    situacao = db.Column(db.String(50))
     
+    # Relacionamento com Empréstimos[cite: 1]
     emprestimos = db.relationship('Emprestimo', backref='instrumento', lazy=True)
 
+# Tabela Empréstimo[cite: 1]
 class Emprestimo(db.Model):
-    __tablename__ = 'emprestimos'
+    __tablename__ = 'emprestimo'
     
-    id = db.Column(db.Integer, primary_key=True)
-    aluno_id = db.Column(db.Integer, db.ForeignKey('alunos.id'), nullable=False)
-    instrumento_id = db.Column(db.Integer, db.ForeignKey('instrumentos.id'), nullable=False)
-    data_emprestimo = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    data_devolucao_prevista = db.Column(db.Date, nullable=False)
-    data_devolucao_real = db.Column(db.Date, nullable=True)
-    status = db.Column(db.String(30), default='No prazo', nullable=False)  # No prazo, Em atraso, Devolvido
-    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
+    id_emprestimo = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id_aluno = db.Column(db.Integer, db.ForeignKey('aluno.id_aluno'), nullable=False)
+    id_instrumento = db.Column(db.Integer, db.ForeignKey('instrumento.id_instrumento'), nullable=False)
+    data_hora_emprestimo = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    data_devolucao = db.Column(db.DateTime, nullable=True)
+    status = db.Column(db.String(30))
 
+# Tabela Evento[cite: 1]
 class Evento(db.Model):
-    __tablename__ = 'eventos'
+    __tablename__ = 'evento'
     
-    id = db.Column(db.Integer, primary_key=True)
-    titulo = db.Column(db.String(150), nullable=False)
+    id_evento = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    nome = db.Column(db.String(150), nullable=False)
     data = db.Column(db.Date, nullable=False)
-    horario = db.Column(db.String(10), nullable=False)
-    local = db.Column(db.String(150), nullable=False)
-    descricao = db.Column(db.Text, nullable=False)
-    responsavel = db.Column(db.String(100), nullable=False, default='Coordenação')
-    status = db.Column(db.String(30), default='Agendado', nullable=False)
-    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
+    local = db.Column(db.String(150))
+    horario = db.Column(db.Time)
+    descricao = db.Column(db.Text)
+
+# Tabela Usuário[cite: 1]
+class Usuario(db.Model):
+    __tablename__ = 'usuario'
+    
+    id_usuario = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    nome = db.Column(db.String(150), nullable=False)
+    email = db.Column(db.String(150), unique=True, nullable=False)
+    senha = db.Column(db.String(255), nullable=False)
