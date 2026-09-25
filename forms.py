@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, SelectField, DateField, DateTimeLocalField, TextAreaField
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, SelectField, DateField, DateTimeLocalField, TextAreaField
 from wtforms.validators import DataRequired, Email, Length
 
 class LoginForm(FlaskForm):
@@ -15,7 +15,7 @@ class AlunoForm(FlaskForm):
 
 class InstrumentoForm(FlaskForm):
     nome = StringField('Nome do instrumento', validators=[DataRequired(), Length(max=100)])
-    codigo = StringField('Código do instrumento', validators=[DataRequired(), Length(max=50)])
+    tombamento = StringField('Código do instrumento', validators=[DataRequired(), Length(max=50)])
     identificacao = StringField('Identificação do instrumento', validators=[Length(max=100)])
     modelo = StringField('Modelo', validators=[Length(max=100)])
     categoria = SelectField('Categoria', choices=[
@@ -25,6 +25,7 @@ class InstrumentoForm(FlaskForm):
         ('Teclas', 'Teclas'),
         ('Percussão', 'Percussão')
     ], validators=[DataRequired()])
+    submit = SubmitField('Salvar')
 
 class EmprestimoForm(FlaskForm):
     aluno_id = SelectField('Nome completo do aluno', coerce=int, validators=[DataRequired()])

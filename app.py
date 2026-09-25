@@ -19,7 +19,7 @@ from flask_wtf.csrf import CSRFProtect
 from wtforms import StringField, PasswordField, SubmitField, SelectField, DateField, TextAreaField
 from wtforms.validators import DataRequired, Email, Length
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from forms import LoginForm, AlunoForm,InstrumentoForm, EmprestimoForm, EventoForm
 from models import db, Aluno, Instrumento, Emprestimo, Evento, Usuario
 
 # 1. Carregar variáveis de ambiente
@@ -154,12 +154,6 @@ class AlunoForm(FlaskForm):
     bairro = StringField('Bairro')
     submit = SubmitField('Salvar')
 
-class InstrumentoForm(FlaskForm):
-    nome = StringField('Nome do Instrumento', validators=[DataRequired()])
-    tipo = SelectField('Tipo', choices=[('Sopro Madeira', 'Sopro Madeira'), ('Sopro Metal', 'Sopro Metal'), ('Percussão', 'Percussão'), ('Cordas', 'Cordas')], validators=[DataRequired()])
-    numero_serie = StringField('Número de Série', validators=[DataRequired()])
-    status = SelectField('Status', choices=[('Disponível', 'Disponível'), ('Manutenção', 'Manutenção')], validators=[DataRequired()])
-    submit = SubmitField('Salvar')
 
 # ==========================================
 # DECORADORES E AUXILIARES
@@ -258,22 +252,40 @@ def novo_instrumento():
         db.session.commit()
         flash('Instrumento cadastrado com sucesso!', 'success')
         return redirect(url_for('listar_instrumentos'))
-    return render_template('instrumento_form.html', form=form)
+    disponiveis = Instrumento.query.filter_by(status='Disponível').count() if hasattr(Instrumento, 'status') else 0
+    emprestados = Instrumento.query.filter_by(status='Emprestado').count() if hasattr(Instrumento, 'status') else 0
+    manutencao = Instrumento.query.filter_by(status='Manutenção').count() if hasattr(Instrumento, 'status') else 0
+    total = Instrumento.query.count()
+    return render_template(
+        'instrumento_form.html',
+        form=form,
+        disponiveis=disponiveis,
+        emprestados=emprestados,
+        manutencao=manutencao,
+        total=total,
+        agora=datetime.now()
+    )
 
 @app.route('/emprestimos')
 @login_required
 def listar_emprestimos():
-    return render_template('dashboard.html')
+    return render_template('emprestimos_list.html')
 
 @app.route('/emprestimos/novo', methods=['GET', 'POST'])
 @login_required
 def novo_emprestimo():
-    return render_template('novo_emprestimo.html')
+    form = EmprestimoForm()
+    if form.validate_on_submit():
+        pass
+    return render_template('emprestimo_form.html', form=form)
 
 @app.route('/eventos/novo', methods=['GET', 'POST'])
 @login_required
 def novo_evento():
-    return render_template('dashboard.html')
+    form = EventoForm()
+    if form.validate_on_submit():
+        pass
+    return render_template('evento_form.html', form=form)
 
 # ==========================================
 # INICIALIZAÇÃO AUTOMÁTICA
