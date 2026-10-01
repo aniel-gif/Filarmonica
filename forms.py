@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, BooleanField, SelectField, DateField, DateTimeLocalField, TextAreaField
-from wtforms.validators import DataRequired, Email, Length
+from wtforms.validators import DataRequired, Email, Length, Regexp
 
 class LoginForm(FlaskForm):
     email = StringField('E-mail', validators=[DataRequired(), Email()])
@@ -12,6 +12,11 @@ class AlunoForm(FlaskForm):
     endereco = StringField('Endereço', validators=[DataRequired(), Length(max=255)])
     celular = StringField('Número de celular', validators=[DataRequired(), Length(max=20)])
     data_nascimento = DateField('Data de nascimento', validators=[DataRequired()], format='%Y-%m-%d')
+    numero = StringField('Número', validators=[
+        DataRequired(message="O campo número é obrigatório."),
+        Length(max=3, message="O número deve ter no máximo 3 dígitos."),
+        Regexp(r'^\d{1,3}$', message="Digite apenas números (máximo 3 digitos).")
+    ])
 
 class InstrumentoForm(FlaskForm):
     nome = StringField('Nome do instrumento', validators=[DataRequired(), Length(max=100)])

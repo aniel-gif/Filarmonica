@@ -208,12 +208,6 @@ def dashboard():
                            total_instrumentos=total_instrumentos, 
                            total_emprestimos=total_emprestimos)
 
-@app.route('/alunos')
-@login_required
-def listar_alunos():
-    alunos = Aluno.query.all()
-    return render_template('alunos.html', alunos=alunos)
-
 @app.route('/alunos/novo', methods=['GET', 'POST'])
 @login_required
 def novo_aluno():
@@ -221,9 +215,11 @@ def novo_aluno():
     if form.validate_on_submit():
         aluno = Aluno(
             nome=form.nome.data,
-            cpf=form.cpf.data,
-            telefone=form.telefone.data,
-            instrumento_estudo=form.instrumento_estudo.data
+            celular=form.celular.data,
+            data_nascimento=form.data_nascimento.data,
+            rua=form.rua.data,
+            numero=form.numero.data,
+            bairro=form.bairro.data
         )
         db.session.add(aluno)
         db.session.commit()
@@ -231,11 +227,12 @@ def novo_aluno():
         return redirect(url_for('listar_alunos'))
     return render_template('aluno_form.html', form=form)
 
-@app.route('/instrumentos')
+@app.route('/alunos')
 @login_required
-def listar_instrumentos():
-    instrumentos = Instrumento.query.all()
-    return render_template('instrumentos.html', instrumentos=instrumentos)
+def listar_alunos():
+    alunos = Aluno.query.all()
+    return render_template('alunos.html', alunos=alunos)
+
 
 @app.route('/instrumentos/novo', methods=['GET', 'POST'])
 @login_required
@@ -252,10 +249,12 @@ def novo_instrumento():
         db.session.commit()
         flash('Instrumento cadastrado com sucesso!', 'success')
         return redirect(url_for('listar_instrumentos'))
-    disponiveis = Instrumento.query.filter_by(status='Disponível').count() if hasattr(Instrumento, 'status') else 0
-    emprestados = Instrumento.query.filter_by(status='Emprestado').count() if hasattr(Instrumento, 'status') else 0
-    manutencao = Instrumento.query.filter_by(status='Manutenção').count() if hasattr(Instrumento, 'status') else 0
+
+    disponiveis = Instrumento.query.filter_by(status='Disponível').count()
+    emprestados = Instrumento.query.filter_by(status='Emprestado').count()
+    manutencao = Instrumento.query.filter_by(status='Manutenção').count()
     total = Instrumento.query.count()
+
     return render_template(
         'instrumento_form.html',
         form=form,
@@ -266,18 +265,50 @@ def novo_instrumento():
         agora=datetime.now()
     )
 
-@app.route('/emprestimos')
+
+@app.route('/instrumentos')
 @login_required
-def listar_emprestimos():
-    return render_template('emprestimos_list.html')
+def listar_instrumentos():
+    instrumentos = Instrumento.query.all()  # Busca todos os instrumentos
+    return render_template('instrumentos_list.html', instrumentos=instrumentos)
 
 @app.route('/emprestimos/novo', methods=['GET', 'POST'])
 @login_required
 def novo_emprestimo():
     form = EmprestimoForm()
+    
+    # Preenche as caixas de seleção com dados vindos do banco
+    if hasattr(form, 'aluno_id'):
+        form.aluno_id.choices = [(a.id, a.nome) for a in Aluno.query.all()]
+    if hasattr(form, 'instrumento_id'):
+        form.instrumento_id.choices = [(i.id, f"{i.nome} ({i.numero_serie or 'S/N'})") for i in Instrumento.query.filter_by(status='Disponível').all()]
+
     if form.validate_on_submit():
-        pass
+        emprestimo = Emprestimo(
+            aluno_id=form.aluno_id.data,
+            instrumento_id=form.instrumento_id.data,
+            data_emprestimo=form.data_emprestimo.data,
+            data_devolucao_prevista=form.data_devolucao_prevista.data,
+            status='Em andamento'
+        )
+        # Atualiza o status do instrumento para 'Emprestado'
+        instrumento = Instrumento.query.get(form.instrumento_id.data)
+        if instrumento:
+            instrumento.status = 'Emprestado'
+
+        db.session.add(emprestimo)
+        db.session.commit()
+        flash('Empréstimo registrado com sucesso!', 'success')
+        return redirect(url_for('listar_emprestimos'))
+
     return render_template('emprestimo_form.html', form=form)
+
+
+@app.route('/emprestimos')
+@login_required
+def listar_emprestimos():
+    emprestimos = Emprestimo.query.all()  # Busca o histórico no banco
+    return render_template('emprestimos_list.html', emprestimos=emprestimos)
 
 @app.route('/eventos/novo', methods=['GET', 'POST'])
 @login_required
