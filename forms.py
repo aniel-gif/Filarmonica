@@ -8,36 +8,32 @@ class LoginForm(FlaskForm):
     lembrar = BooleanField('Lembrar de mim')
 
 class AlunoForm(FlaskForm):
-    nome = StringField('Nome completo do aluno', validators=[DataRequired(), Length(max=150)])
-    endereco = StringField('Endereço', validators=[DataRequired(), Length(max=255)])
-    celular = StringField('Número de celular', validators=[DataRequired(), Length(max=20)])
-    data_nascimento = DateField('Data de nascimento', validators=[DataRequired()], format='%Y-%m-%d')
-    numero = StringField('Número', validators=[
-        DataRequired(message="O campo número é obrigatório."),
-        Length(max=3, message="O número deve ter no máximo 3 dígitos."),
-        Regexp(r'^\d{1,3}$', message="Digite apenas números (máximo 3 digitos).")
-    ])
+    nome = StringField('Nome completo do Aluno', validators=[DataRequired()])
+    celular = StringField('Telemóvel/WhatsApp')
+    data_nascimento = DateField('Data de Nascimento', format='%Y-%m-%d', validators=[DataRequired()])
+    rua = StringField('Rua')
+    numero = StringField('Número')
+    bairro = StringField('Bairro')
+    submit = SubmitField('Salvar aluno')
 
 class InstrumentoForm(FlaskForm):
-    nome = StringField('Nome do instrumento', validators=[DataRequired(), Length(max=100)])
-    tombamento = StringField('Código do instrumento', validators=[DataRequired(), Length(max=50)])
-    identificacao = StringField('Identificação do instrumento', validators=[Length(max=100)])
-    modelo = StringField('Modelo', validators=[Length(max=100)])
-    categoria = SelectField('Categoria', choices=[
-        ('', 'Selecione a categoria'),
-        ('Sopro', 'Sopro'),
-        ('Cordas', 'Cordas'),
-        ('Teclas', 'Teclas'),
-        ('Percussão', 'Percussão')
-    ], validators=[DataRequired()])
-    submit = SubmitField('Salvar')
+    nome = StringField('Nome do Instrumento', validators=[DataRequired()])
+    tipo = StringField('Tipo / Categoria')
+    numero_serie = StringField('Número de Série')
+    status = SelectField('Status', choices=[
+        ('Disponível', 'Disponível'),
+        ('Emprestado', 'Emprestado'),
+        ('Manutenção', 'Manutenção')
+    ], default='Disponível')
+    submit = SubmitField('Salvar instrumento')
 
 class EmprestimoForm(FlaskForm):
-    aluno_id = SelectField('Nome completo do aluno', coerce=int, validators=[DataRequired()])
-    instrumento_id = SelectField('Instrumento emprestado', coerce=int, validators=[DataRequired()])
-    data_emprestimo = DateTimeLocalField('Data e hora do empréstimo', format='%Y-%m-%dT%H:%M', validators=[DataRequired()])
-    data_devolucao_prevista = DateField('Data de devolução do instrumento', format='%Y-%m-%d', validators=[DataRequired()])
-
+    aluno_id = SelectField('Aluno', coerce=int, validators=[DataRequired()])
+    instrumento_id = SelectField('Instrumento', coerce=int, validators=[DataRequired()])
+    data_emprestimo = DateField('Data do Empréstimo', format='%Y-%m-%d', validators=[DataRequired()])
+    data_devolucao_prevista = DateField('Data de Devolução', format='%Y-%m-%d', validators=[DataRequired()])
+    submit = SubmitField('Salvar empréstimo')
+    
 class EventoForm(FlaskForm):
     titulo = StringField('Evento ou atividade', validators=[DataRequired(), Length(max=150)])
     data = DateField('Data', validators=[DataRequired()], format='%Y-%m-%d')

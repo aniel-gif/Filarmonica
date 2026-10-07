@@ -1,64 +1,55 @@
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
 from datetime import datetime
 
 db = SQLAlchemy()
 
-# Tabela Aluno[cite: 1]
+# Tabela Usuário
+class Usuario(UserMixin, db.Model):
+    __tablename__ = 'usuarios'
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    senha_hash = db.Column(db.String(255), nullable=False)
+
+# Tabela Aluno
 class Aluno(db.Model):
-    __tablename__ = 'aluno'
-    
-    id_aluno = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    nome_completo = db.Column(db.String(150), nullable=False)
-    endereco = db.Column(db.String(200))
-    telefone = db.Column(db.String(20))
-    data_nascimento = db.Column(db.Date)
-    
-    # Relacionamento com Empréstimos[cite: 1]
+    __tablename__ = 'alunos'
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(150), nullable=False)
+    celular = db.Column(db.String(20), nullable=True)
+    data_nascimento = db.Column(db.Date, nullable=True)
+    rua = db.Column(db.String(150), nullable=True)
+    numero = db.Column(db.String(20), nullable=True)
+    bairro = db.Column(db.String(100), nullable=True)
     emprestimos = db.relationship('Emprestimo', backref='aluno', lazy=True)
 
-# Tabela Instrumento[cite: 1]
+# Tabela Instrumento
 class Instrumento(db.Model):
-    __tablename__ = 'instrumento'
-    
-    id_instrumento = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    __tablename__ = 'instrumentos'
+    id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
-    categoria = db.Column(db.String(100))
-    marca = db.Column(db.String(100))
-    modelo = db.Column(db.String(100))
-    numero_serie = db.Column(db.String(100))
-    estado = db.Column(db.String(50))
-    situacao = db.Column(db.String(50))
-    
-    # Relacionamento com Empréstimos[cite: 1]
+    tipo = db.Column(db.String(50), nullable=True)
+    numero_serie = db.Column(db.String(50), nullable=True)
+    status = db.Column(db.String(30), default='Disponível')
     emprestimos = db.relationship('Emprestimo', backref='instrumento', lazy=True)
 
-# Tabela Empréstimo[cite: 1]
+# Tabela Empréstimo
 class Emprestimo(db.Model):
-    __tablename__ = 'emprestimo'
-    
-    id_emprestimo = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    id_aluno = db.Column(db.Integer, db.ForeignKey('aluno.id_aluno'), nullable=False)
-    id_instrumento = db.Column(db.Integer, db.ForeignKey('instrumento.id_instrumento'), nullable=False)
-    data_hora_emprestimo = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    data_devolucao = db.Column(db.DateTime, nullable=True)
-    status = db.Column(db.String(30))
+    __tablename__ = 'emprestimos'
+    id = db.Column(db.Integer, primary_key=True)
+    aluno_id = db.Column(db.Integer, db.ForeignKey('alunos.id'), nullable=False)
+    instrumento_id = db.Column(db.Integer, db.ForeignKey('instrumentos.id'), nullable=False)
+    data_emprestimo = db.Column(db.DateTime, default=datetime.utcnow)
+    data_devolucao_prevista = db.Column(db.Date, nullable=False)
+    status = db.Column(db.String(30), default='Em andamento')
 
-# Tabela Evento[cite: 1]
+# Tabela Evento
 class Evento(db.Model):
     __tablename__ = 'evento'
-    
     id_evento = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nome = db.Column(db.String(150), nullable=False)
     data = db.Column(db.Date, nullable=False)
     local = db.Column(db.String(150))
     horario = db.Column(db.Time)
     descricao = db.Column(db.Text)
-
-# Tabela Usuário[cite: 1]
-class Usuario(db.Model):
-    __tablename__ = 'usuario'
-    
-    id_usuario = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    nome = db.Column(db.String(150), nullable=False)
-    email = db.Column(db.String(150), unique=True, nullable=False)
-    senha = db.Column(db.String(255), nullable=False)

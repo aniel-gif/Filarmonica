@@ -1,36 +1,24 @@
 import os
-from wtforms.validators import DataRequired, Optional, Regexp, ValidationError
-from wtforms import StringField, PasswordField, SubmitField, SelectField, DateField, TextAreaField, BooleanField
-os.environ['PGCLIENTENCODING'] = 'utf-8'
-os.environ['PGTZ'] = 'UTC'
 from datetime import datetime, date
 from functools import wraps
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-from wtforms import StringField, PasswordField, SubmitField, SelectField, DateField, TextAreaField, BooleanField
-from datetime import datetime
-from functools import wraps
-from dotenv import load_dotenv
-from flask import Flask, render_template, request, redirect, url_for, flash, session
-from models import db
-from flask_sqlalchemy import SQLAlchemy
-from flask_wtf import FlaskForm
 from flask_wtf.csrf import CSRFProtect
-from wtforms import StringField, PasswordField, SubmitField, SelectField, DateField, TextAreaField
-from wtforms.validators import DataRequired, Email, Length
 from werkzeug.security import generate_password_hash, check_password_hash
-from forms import LoginForm, AlunoForm,InstrumentoForm, EmprestimoForm, EventoForm
+
+# Importações dos ficheiros locais
 from models import db, Aluno, Instrumento, Emprestimo, Evento, Usuario
+from forms import LoginForm, AlunoForm, InstrumentoForm, EmprestimoForm, EventoForm
 
 # 1. Carregar variáveis de ambiente
 load_dotenv()
 
 app = Flask(__name__)
 
-# 2. Configurações da Aplicação
-db_uri = os.getenv('DATABASE_URL', 'postgresql://postgres:postgres@localhost:5432/filarmonica_db')
-if db_uri and 'client_encoding' not in db_uri:
-    db_uri += '?client_encoding=utf8' if '?' not in db_uri else '&client_encoding=utf8'
+# 2. Configurações da Aplicação (Fallback para SQLite caso PostgreSQL não esteja configurado)
+db_uri = os.getenv('DATABASE_URL', 'sqlite:///filarmonica.db')
+if db_uri.startswith('postgres://'):
+    db_uri = db_uri.replace('postgres://', 'postgresql://', 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -40,121 +28,6 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'filarmonica-secret-key-12345
 db.init_app(app)
 csrf = CSRFProtect(app)
 
-# 4. Criação automática das tabelas no PostgreSQL
-with app.app_context():
-    db.create_all()
-
-
-# ==========================================
-# MODELOS (BANCO DE DADOS)
-# ==========================================
-
-class Usuario(db.Model):
-    __tablename__ = 'usuarios'
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    senha_hash = db.Column(db.String(255), nullable=False)
-    criado_em = db.Column(db.DateTime, default=datetime.utcnow)
-
-class Aluno(db.Model):
-    __tablename__ = 'alunos'
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(100), nullable=False)
-    cpf = db.Column(db.String(14), unique=True, nullable=False)
-    telefone = db.Column(db.String(20))
-    instrumento_estudo = db.Column(db.String(50))
-    data_cadastro = db.Column(db.DateTime, default=datetime.utcnow)
-
-class Instrumento(db.Model):
-    __tablename__ = 'instrumentos'
-    id = db.Column(db.Integer, primary_key=True)
-    nome = db.Column(db.String(100), nullable=False)
-    tipo = db.Column(db.String(50), nullable=False)  # Sopro, Percussão, Cordas
-    numero_serie = db.Column(db.String(50), unique=True)
-    status = db.Column(db.String(20), default='Disponível')  # Disponível, Emprestado, Manutenção
-
-
-
-class Evento(db.Model):
-    __tablename__ = 'eventos'
-    id = db.Column(db.Integer, primary_key=True)
-    titulo = db.Column(db.String(150), nullable=False)
-    data_evento = db.Column(db.DateTime, nullable=False)
-    local = db.Column(db.String(150), nullable=False)
-    descricao = db.Column(db.Text)
-
-# ==========================================
-# FORMULÁRIOS (WTFORMS)
-# ==========================================
-
-class LoginForm(FlaskForm):
-    email = StringField('E-mail', validators=[DataRequired(), Email()])
-    senha = PasswordField('Senha', validators=[DataRequired()])
-    lembrar = BooleanField('Lembrar de mim')
-    submit = SubmitField('Entrar')
-
-def validar_idade_minima(form, field):
-    if field.data:
-        hoje = date.today()
-        # Calcula a idade exata considerando mês e dia
-        idade = hoje.year - field.data.year - ((hoje.month, hoje.day) < (field.data.month, field.data.day))
-        if idade < 15:
-            raise ValidationError("O aluno deve ter no mínimo 15 anos de idade.")
-
-def get_data_maxima_15_anos():
-    hoje = date.today()
-    try:
-        return hoje.replace(year=hoje.year - 15).isoformat()
-    except ValueError: # Trata ano bissexto (29 de fevereiro)
-        return hoje.replace(year=hoje.year - 15, day=28).isoformat()
-
-
-class AlunoForm(FlaskForm):
-    nome = StringField('Nome', validators=[DataRequired(message="O nome é obrigatório")])
-    cpf = StringField('CPF')
-    email = StringField('E-mail')
-    celular = StringField(
-        'Celular',
-        validators=[
-            DataRequired(message="O celular é obrigatório."),
-            Regexp(r'^\(d{2}\)\d{8,9}$', message="O celular deve estar no formato (84)9XXXXXXX.")
-        ],
-        render_kw={
-            "maxlength": "13",
-            "oninput": r"this.value = this.value.replace(/\D/g, '').replace(/^(\d{2})(\d)/, '($1)$2').substring(0, 13)",
-            "placeholder": "Ex: (00)999998888"
-        }
-        )
-    data_nascimento = DateField(
-        'Data de Nascimento', 
-        validators=[
-            DataRequired(message="A data de nascimento é obrigatória."),
-            validar_idade_minima
-            ],
-        render_kw={
-            "max": get_data_maxima_15_anos(),
-            "min": "1900-01-01"
-        }
-        )
-    rua = StringField('Rua')
-    numero = StringField(
-        'Número',
-        validators=[
-            Optional(),
-            Regexp(r'^\d+$',message="Digite apenas números")
-        ],
-        render_kw={
-            "type": "number",
-            "min": "0",
-            "oninput": "this.value = this.value.replace(/[^0-9]/g, '')",
-            "placeholder": "Ex: 123"
-        }
-    )
-    bairro = StringField('Bairro')
-    submit = SubmitField('Salvar')
-
-
 # ==========================================
 # DECORADORES E AUXILIARES
 # ==========================================
@@ -163,7 +36,7 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'usuario_id' not in session:
-            flash('Por favor, faça login para acessar esta página.', 'warning')
+            flash('Por favor, faça login para aceder a esta página.', 'warning')
             return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
@@ -202,7 +75,7 @@ def logout():
 def dashboard():
     total_alunos = Aluno.query.count()
     total_instrumentos = Instrumento.query.count()
-    total_emprestimos = Emprestimo.query.filter_by(status='Ativo').count()
+    total_emprestimos = Emprestimo.query.filter_by(status='Em andamento').count()
     return render_template('dashboard.html', 
                            total_alunos=total_alunos, 
                            total_instrumentos=total_instrumentos, 
@@ -213,7 +86,7 @@ def dashboard():
 def novo_aluno():
     form = AlunoForm()
     if form.validate_on_submit():
-        aluno = Aluno(
+        novo_aluno = Aluno(
             nome=form.nome.data,
             celular=form.celular.data,
             data_nascimento=form.data_nascimento.data,
@@ -221,7 +94,7 @@ def novo_aluno():
             numero=form.numero.data,
             bairro=form.bairro.data
         )
-        db.session.add(aluno)
+        db.session.add(novo_aluno)
         db.session.commit()
         flash('Aluno cadastrado com sucesso!', 'success')
         return redirect(url_for('listar_alunos'))
@@ -231,21 +104,20 @@ def novo_aluno():
 @login_required
 def listar_alunos():
     alunos = Aluno.query.all()
-    return render_template('alunos.html', alunos=alunos)
-
+    return render_template('alunos_list.html', alunos=alunos)
 
 @app.route('/instrumentos/novo', methods=['GET', 'POST'])
 @login_required
 def novo_instrumento():
     form = InstrumentoForm()
     if form.validate_on_submit():
-        instrumento = Instrumento(
+        novo_inst = Instrumento(
             nome=form.nome.data,
             tipo=form.tipo.data,
             numero_serie=form.numero_serie.data,
             status=form.status.data
         )
-        db.session.add(instrumento)
+        db.session.add(novo_inst)
         db.session.commit()
         flash('Instrumento cadastrado com sucesso!', 'success')
         return redirect(url_for('listar_instrumentos'))
@@ -265,11 +137,10 @@ def novo_instrumento():
         agora=datetime.now()
     )
 
-
 @app.route('/instrumentos')
 @login_required
 def listar_instrumentos():
-    instrumentos = Instrumento.query.all()  # Busca todos os instrumentos
+    instrumentos = Instrumento.query.all()
     return render_template('instrumentos_list.html', instrumentos=instrumentos)
 
 @app.route('/emprestimos/novo', methods=['GET', 'POST'])
@@ -277,9 +148,8 @@ def listar_instrumentos():
 def novo_emprestimo():
     form = EmprestimoForm()
     
-    # Preenche as caixas de seleção com dados vindos do banco
     if hasattr(form, 'aluno_id'):
-        form.aluno_id.choices = [(a.id, a.nome) for a in Aluno.query.all()]
+        form.aluno_id.choices = [(a.id, a.nome) for a in Aluno.query.order_by('nome').all()]
     if hasattr(form, 'instrumento_id'):
         form.instrumento_id.choices = [(i.id, f"{i.nome} ({i.numero_serie or 'S/N'})") for i in Instrumento.query.filter_by(status='Disponível').all()]
 
@@ -291,7 +161,6 @@ def novo_emprestimo():
             data_devolucao_prevista=form.data_devolucao_prevista.data,
             status='Em andamento'
         )
-        # Atualiza o status do instrumento para 'Emprestado'
         instrumento = Instrumento.query.get(form.instrumento_id.data)
         if instrumento:
             instrumento.status = 'Emprestado'
@@ -303,11 +172,10 @@ def novo_emprestimo():
 
     return render_template('emprestimo_form.html', form=form)
 
-
 @app.route('/emprestimos')
 @login_required
 def listar_emprestimos():
-    emprestimos = Emprestimo.query.all()  # Busca o histórico no banco
+    emprestimos = Emprestimo.query.all()
     return render_template('emprestimos_list.html', emprestimos=emprestimos)
 
 @app.route('/eventos/novo', methods=['GET', 'POST'])
@@ -324,10 +192,8 @@ def novo_evento():
 
 if __name__ == '__main__':
     with app.app_context():
-        # Cria todas as tabelas caso não existam
         db.create_all()
         
-        # Cria o usuário admin padrão caso não exista
         if not Usuario.query.filter_by(email='admin@filarmonica.org').first():
             admin_padrao = Usuario(
                 nome='Administrador',
