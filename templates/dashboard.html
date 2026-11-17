@@ -144,7 +144,7 @@
             {% for evt in eventos_agendados %}
             <tr class="hover:bg-slate-50">
               <td class="p-3 font-semibold text-slate-800">{{ evt.titulo }}</td>
-              <td class="p-3 text-slate-600">{{ evt.data.strftime('%d/%m/%Y') }}</td>
+              <td class="p-3 text-slate-600">{{ evt.data.strftime('%d/%m') }}</td>
               <td class="p-3 text-slate-500">{{ evt.horario }}</td>
               <td class="p-3 text-slate-500">{{ evt.local }}</td>
               <td class="p-3 text-slate-600">{{ evt.responsavel }}</td>

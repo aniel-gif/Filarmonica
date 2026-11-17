@@ -34,7 +34,10 @@
                             <span class="px-2 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700">Em andamento</span>
                         </td>
                         <td class="p-3 text-right">
-                            <!-- Ações -->
+                            <form action="{{ url_for('emprestimo_deletar', id=emp.id) }}" method="POST" class="inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="text-red-600 hover:text-red-800 font-semibold" onclick="return confirm('Deseja excluir este empréstimo?')">Excluir</button>
+                            </form>
                         </td>
                     </tr>
                     {% else %}

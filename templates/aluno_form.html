@@ -24,12 +24,15 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Número de celular</label>
-              {{ form.celular(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm", placeholder="(00) 00000-0000") }}
+              {{ form.celular(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm", placeholder="(00) 00000-0000",
+                  oninput="formatarCelular(this)",
+                  onblur="formatarCelular(this)",
+                  maxlength="15") }}
             </div>
 
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Data de nascimento</label>
-              {{ form.data_nascimento(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm", type="date") }}
+              {{ form.data_nascimento(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 pr-10 text-sm", type="date") }}
             </div>
           </div>
         </div>
@@ -53,7 +56,7 @@
                   class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm",
                   placeholder="Ex: 123",
                   maxlength="3",
-                  oniput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 3);"
+                  oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 3);"
               ) }}
             </div>
           </div>
@@ -78,4 +81,19 @@
     </form>
   </div>
 </div>
+
+<script>
+function formatarCelular(input) {
+  let value = input.value.replace(/\D/g, '');
+  if (value.length > 11) value = value.slice(0, 11);
+  if (value.length > 7) {
+    value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7, 11)}`;
+  } else if (value.length > 2) {
+    value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+  } else if (value.length > 0) {
+    value = `(${value}`;
+  }
+  input.value = value;
+}
+</script>
 {% endblock %}

@@ -1,11 +1,10 @@
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import UserMixin
 from datetime import datetime
 
 db = SQLAlchemy()
 
 # Tabela Usuário
-class Usuario(UserMixin, db.Model):
+class Usuario(db.Model):
     __tablename__ = 'usuarios'
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
@@ -24,12 +23,21 @@ class Aluno(db.Model):
     bairro = db.Column(db.String(100), nullable=True)
     emprestimos = db.relationship('Emprestimo', backref='aluno', lazy=True)
 
+    @property
+    def endereco(self):
+        partes = [p for p in [self.rua, self.numero, self.bairro] if p]
+        return ', '.join(partes) if partes else 'Sem endereço'
+
 # Tabela Instrumento
 class Instrumento(db.Model):
     __tablename__ = 'instrumentos'
     id = db.Column(db.Integer, primary_key=True)
     nome = db.Column(db.String(100), nullable=False)
     tipo = db.Column(db.String(50), nullable=True)
+    codigo = db.Column(db.String(50), nullable=True)
+    modelo = db.Column(db.String(100), nullable=True)
+    categoria = db.Column(db.String(50), nullable=True)
+    identificacao = db.Column(db.String(100), nullable=True)
     numero_serie = db.Column(db.String(50), nullable=True)
     status = db.Column(db.String(30), default='Disponível')
     emprestimos = db.relationship('Emprestimo', backref='instrumento', lazy=True)
@@ -46,10 +54,12 @@ class Emprestimo(db.Model):
 
 # Tabela Evento
 class Evento(db.Model):
-    __tablename__ = 'evento'
-    id_evento = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    __tablename__ = 'eventos'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nome = db.Column(db.String(150), nullable=False)
     data = db.Column(db.Date, nullable=False)
     local = db.Column(db.String(150))
     horario = db.Column(db.Time)
     descricao = db.Column(db.Text)
+    responsavel = db.Column(db.String(150))
+    status = db.Column(db.String(30), default='Agendado')

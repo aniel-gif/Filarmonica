@@ -4,7 +4,7 @@
 <div class="space-y-6">
   <div class="flex justify-between items-center">
     <h2 class="text-2xl font-bold text-slate-800">Eventos Agendados</h2>
-    <a href="{{ url_for('evento_novo') }}" class="px-4 py-2 bg-brand-green text-white rounded-lg font-semibold text-sm hover:bg-green-700 transition">
+    <a href="{{ url_for('novo_evento') }}" class="px-4 py-2 bg-brand-green text-white rounded-lg font-semibold text-sm hover:bg-green-700 transition">
       + Cadastrar Evento
     </a>
   </div>
@@ -26,7 +26,7 @@
           {% for evt in eventos %}
           <tr class="hover:bg-slate-50">
             <td class="p-3 font-semibold text-slate-800">{{ evt.titulo }}</td>
-            <td class="p-3 text-slate-600">{{ evt.data.strftime('%d/%m/%Y') }}</td>
+            <td class="p-3 text-slate-600">{{ evt.data.strftime('%d/%m') }}</td>
             <td class="p-3 text-slate-500">{{ evt.horario }}</td>
             <td class="p-3 text-slate-500">{{ evt.local }}</td>
             <td class="p-3 text-slate-600">{{ evt.responsavel }}</td>

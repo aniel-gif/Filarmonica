@@ -4,41 +4,73 @@
     --brand-green: #217A42;
     --brand-green-hover: #1A6234;
   }
-  
+
+  /* Transição de página suave */
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    animation: fadeIn 0.5s ease-in-out;
   }
-  
-  .bg-brand-red {
-    background-color: var(--brand-red);
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-  
-  .text-brand-red {
-    color: var(--brand-red);
+
+  /* Animações interativas */
+  .transition-all {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  
-  .border-brand-red {
-    border-color: var(--brand-red);
+
+  button, a {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  
-  .bg-brand-green {
-    background-color: var(--brand-green);
+
+  button:active, a:active {
+    transform: scale(0.98);
   }
-  
-  .bg-brand-green:hover {
-    background-color: var(--brand-green-hover);
-  }
-  
-  .text-brand-green {
-    color: var(--brand-green);
-  }
-  
+
+  .bg-brand-red { background-color: var(--brand-red); }
+  .text-brand-red { color: var(--brand-red); }
+  .border-brand-red { border-color: var(--brand-red); }
+  .bg-brand-green { background-color: var(--brand-green); }
+  .bg-brand-green:hover { background-color: var(--brand-green-hover); }
+  .text-brand-green { color: var(--brand-green); }
+
   /* Estilo do Menu Ativo na Sidebar */
   .nav-link.active {
     background-color: var(--brand-red);
     color: #ffffff !important;
   }
-  
+
   .nav-link.active i {
     color: #ffffff !important;
+  }
+
+  /* Campos de data (calendário nativo) */
+  input[type="date"] {
+    position: relative;
+    color: #1e293b;
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 0.5rem;
+    padding: 0.625rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  input[type="date"]:focus {
+    border-color: #8C1D27;
+    box-shadow: 0 0 0 3px rgba(140, 29, 39, 0.1);
+    outline: none;
+  }
+
+  /* Ícone do calendário */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(0.5) sepia(1) saturate(5) hue-rotate(330deg);
+    transition: transform 0.2s ease;
+  }
+
+  input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    transform: scale(1.2);
   }
