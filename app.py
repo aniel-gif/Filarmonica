@@ -223,6 +223,15 @@ def listar_eventos():
     eventos = Evento.query.all()
     return render_template('eventos_list.html', eventos=eventos)
 
+@app.route('/eventos/deletar/<int:id>', methods=['POST'])
+@login_required
+def evento_deletar(id):
+    evento = Evento.query.get_or_404(id)
+    db.session.delete(evento)
+    db.session.commit()
+    flash('Evento excluído com sucesso!', 'success')
+    return redirect(url_for('listar_eventos'))
+
 @app.route('/emprestimos/deletar/<int:id>', methods=['POST'])
 @login_required
 def emprestimo_deletar(id):

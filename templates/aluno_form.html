@@ -18,21 +18,36 @@
         <div class="space-y-4">
           <div>
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nome completo do aluno</label>
-            {{ form.nome(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm", placeholder="Digite o nome completo") }}
+            {{ form.nome(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.nome.errors else ""), placeholder="Digite o nome completo") }}
+            {% if form.nome.errors %}
+              <div class="mt-1 text-xs text-red-600">
+                {% for error in form.nome.errors %}{{ error }}{% endfor %}
+              </div>
+            {% endif %}
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Número de celular</label>
-              {{ form.celular(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm", placeholder="(00) 00000-0000",
+              {{ form.celular(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.celular.errors else ""), placeholder="(00) 00000-0000",
                   oninput="formatarCelular(this)",
                   onblur="formatarCelular(this)",
                   maxlength="15") }}
+              {% if form.celular.errors %}
+                <div class="mt-1 text-xs text-red-600">
+                  {% for error in form.celular.errors %}{{ error }}{% endfor %}
+                </div>
+              {% endif %}
             </div>
 
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Data de nascimento</label>
-              {{ form.data_nascimento(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 pr-10 text-sm", type="date") }}
+              {{ form.data_nascimento(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 pr-10 text-sm" + (" border-red-500" if form.data_nascimento.errors else ""), type="date") }}
+              {% if form.data_nascimento.errors %}
+                <div class="mt-1 text-xs text-red-600">
+                  {% for error in form.data_nascimento.errors %}{{ error }}{% endfor %}
+                </div>
+              {% endif %}
             </div>
           </div>
         </div>
@@ -47,24 +62,39 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div class="md:col-span-2">
               <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Rua / Logradouro</label>
-              {{ form.rua(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm", placeholder="Nome da rua") }}
+              {{ form.rua(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.rua.errors else ""), placeholder="Nome da rua") }}
+              {% if form.rua.errors %}
+                <div class="mt-1 text-xs text-red-600">
+                  {% for error in form.rua.errors %}{{ error }}{% endfor %}
+                </div>
+              {% endif %}
             </div>
 
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Número</label>
               {{ form.numero(
-                  class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm",
+                  class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.numero.errors else ""),
                   placeholder="Ex: 123",
                   maxlength="3",
                   oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 3);"
               ) }}
+              {% if form.numero.errors %}
+                <div class="mt-1 text-xs text-red-600">
+                  {% for error in form.numero.errors %}{{ error }}{% endfor %}
+                </div>
+              {% endif %}
             </div>
           </div>
 
           <!-- Bairro ocupando toda a largura -->
           <div>
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Bairro</label>
-            {{ form.bairro(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm", placeholder="Nome do bairro") }}
+            {{ form.bairro(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.bairro.errors else ""), placeholder="Nome do bairro") }}
+            {% if form.bairro.errors %}
+              <div class="mt-1 text-xs text-red-600">
+                {% for error in form.bairro.errors %}{{ error }}{% endfor %}
+              </div>
+            {% endif %}
           </div>
         </div>
       </div>

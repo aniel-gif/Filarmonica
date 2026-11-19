@@ -14,29 +14,54 @@
 
         <div>
           <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nome do instrumento</label>
-          {{ form.nome(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm", placeholder="Ex.: Violino, Flauta Transversal") }}
+          {{ form.nome(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.nome.errors else ""), placeholder="Ex.: Violino, Flauta Transversal") }}
+          {% if form.nome.errors %}
+            <div class="mt-1 text-xs text-red-600">
+              {% for error in form.nome.errors %}{{ error }}{% endfor %}
+            </div>
+          {% endif %}
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Código do instrumento</label>
-            {{ form.tombamento(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm", placeholder="Ex.: INST-0001") }}
+            {{ form.tombamento(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.tombamento.errors else ""), placeholder="Ex.: INST-0001") }}
+            {% if form.tombamento.errors %}
+              <div class="mt-1 text-xs text-red-600">
+                {% for error in form.tombamento.errors %}{{ error }}{% endfor %}
+              </div>
+            {% endif %}
           </div>
           <div>
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Identificação do instrumento</label>
-            {{ form.identificacao(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm", placeholder="Ex.: Número de série ou marcação") }}
+            {{ form.identificacao(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.identificacao.errors else ""), placeholder="Ex.: Número de série ou marcação") }}
+            {% if form.identificacao.errors %}
+              <div class="mt-1 text-xs text-red-600">
+                {% for error in form.identificacao.errors %}{{ error }}{% endfor %}
+              </div>
+            {% endif %}
           </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Modelo</label>
-            {{ form.modelo(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm", placeholder="Ex.: Yamaha YTR-2330") }}
+            {{ form.modelo(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.modelo.errors else ""), placeholder="Ex.: Yamaha YTR-2330") }}
+            {% if form.modelo.errors %}
+              <div class="mt-1 text-xs text-red-600">
+                {% for error in form.modelo.errors %}{{ error }}{% endfor %}
+              </div>
+            {% endif %}
           </div>
 
           <div>
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Categoria</label>
-            {{ form.categoria(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm") }}
+            {{ form.categoria(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.categoria.errors else "")) }}
+            {% if form.categoria.errors %}
+              <div class="mt-1 text-xs text-red-600">
+                {% for error in form.categoria.errors %}{{ error }}{% endfor %}
+              </div>
+            {% endif %}
           </div>
         </div>
 

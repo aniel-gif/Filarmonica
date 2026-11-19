@@ -65,3 +65,23 @@
   </div>
 </section>
 {% endblock %}
+
+{% block scripts %}
+<script>
+  // Toggle password visibility on login page
+  document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.querySelector('.fa-eye');
+    const passwordInput = document.querySelector('input[name="senha"]');
+
+    if (toggleBtn && passwordInput) {
+      toggleBtn.style.cursor = 'pointer';
+      toggleBtn.addEventListener('click', function() {
+        const isPassword = passwordInput.type === 'password';
+        passwordInput.type = isPassword ? 'text' : 'password';
+        this.classList.toggle('fa-eye');
+        this.classList.toggle('fa-eye-slash');
+      });
+    }
+  });
+</script>
+{% endblock %}

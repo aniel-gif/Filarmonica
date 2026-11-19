@@ -14,12 +14,22 @@
 
       <div>
         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nome completo do aluno</label>
-        {{ form.aluno_id(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm") }}
+        {{ form.aluno_id(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.aluno_id.errors else "")) }}
+        {% if form.aluno_id.errors %}
+          <div class="mt-1 text-xs text-red-600">
+            {% for error in form.aluno_id.errors %}{{ error }}{% endfor %}
+          </div>
+        {% endif %}
       </div>
 
       <div>
         <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Instrumento emprestado</label>
-        {{ form.instrumento_id(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm") }}
+        {{ form.instrumento_id(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.instrumento_id.errors else "")) }}
+        {% if form.instrumento_id.errors %}
+          <div class="mt-1 text-xs text-red-600">
+            {% for error in form.instrumento_id.errors %}{{ error }}{% endfor %}
+          </div>
+        {% endif %}
       </div>
 
       <div class="space-y-4">
