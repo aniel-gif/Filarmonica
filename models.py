@@ -63,3 +63,5 @@ class Evento(db.Model):
     descricao = db.Column(db.Text)
     responsavel = db.Column(db.String(150))
     status = db.Column(db.String(30), default='Agendado')
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    usuario = db.relationship('Usuario', backref='eventos', lazy=True)

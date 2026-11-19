@@ -209,7 +209,8 @@ def novo_evento():
             horario=h,
             descricao=form.memoria.data,
             responsavel=form.responsavel.data,
-            status=form.status.data
+            status=form.status.data,
+            usuario_id=session['usuario_id']
         )
         db.session.add(evt)
         db.session.commit()
@@ -220,13 +221,16 @@ def novo_evento():
 @app.route('/eventos')
 @login_required
 def listar_eventos():
-    eventos = Evento.query.all()
+    eventos = Evento.query.filter_by(usuario_id=session['usuario_id']).all()
     return render_template('eventos_list.html', eventos=eventos)
 
 @app.route('/eventos/deletar/<int:id>', methods=['POST'])
 @login_required
 def evento_deletar(id):
     evento = Evento.query.get_or_404(id)
+    if evento.usuario_id != session['usuario_id']:
+        flash('Você não tem permissão para excluir este evento.', 'danger')
+        return redirect(url_for('listar_eventos'))
     db.session.delete(evento)
     db.session.commit()
     flash('Evento excluído com sucesso!', 'success')
