@@ -4,6 +4,14 @@ from wtforms.validators import DataRequired, Email, Length, Regexp, ValidationEr
 from datetime import date
 
 
+def _validar_data_nascimento(form, field):
+    """Exige data de nascimento válida; não pode ser futura."""
+    date_value = field.data
+    if not date_value:
+        return
+    if date_value > date.today():
+        raise ValidationError('A data de nascimento não pode ser futura.')
+
 def _validar_data_evento(form, field):
     """Exige que a data do evento seja a partir de hoje (sem datas passadas)."""
     date_value = field.data
