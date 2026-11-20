@@ -43,3 +43,27 @@ class Aluno(db.Model):
     def endereco(self):
         partes = [p for p in [self.rua, self.numero, self.bairro] if p]
         return ', '.join(partes) if partes else 'Sem endereço'
+
+# Tabela Instrumento
+class Instrumento(db.Model):
+    __tablename__ = 'instrumentos'
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    tipo = db.Column(db.String(50), nullable=True)
+    codigo = db.Column(db.String(50), nullable=True)
+    modelo = db.Column(db.String(100), nullable=True)
+    categoria = db.Column(db.String(50), nullable=True)
+    identificacao = db.Column(db.String(100), nullable=True)
+    numero_serie = db.Column(db.String(50), nullable=True)
+    status = db.Column(db.String(30), default='Disponível')
+    emprestimos = db.relationship('Emprestimo', backref='instrumento', lazy=True)
+
+# Tabela Empréstimo
+class Emprestimo(db.Model):
+    __tablename__ = 'emprestimos'
+    id = db.Column(db.Integer, primary_key=True)
+    aluno_id = db.Column(db.Integer, db.ForeignKey('alunos.id'), nullable=False)
+    instrumento_id = db.Column(db.Integer, db.ForeignKey('instrumentos.id'), nullable=False)
+    data_emprestimo = db.Column(db.DateTime, default=datetime.utcnow)
+    data_devolucao_prevista = db.Column(db.Date, nullable=False)
+    status = db.Column(db.String(30), default='Em andamento')
