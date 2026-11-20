@@ -25,7 +25,7 @@
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Data *</label>
-          {{ form.data(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.data.errors else ""), type="date") }}
+          {{ form.data(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.data.errors else ""), type="date", min=min_date) }}
           {% if form.data.errors %}
             <div class="mt-1 text-xs text-red-600">
               {% for error in form.data.errors %}{{ error }}{% endfor %}
@@ -46,7 +46,7 @@
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Horário *</label>
-          {{ form.horario(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.horario.errors else ""), placeholder="19:00") }}
+          {{ form.horario(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.horario.errors else ""), type="time") }}
           {% if form.horario.errors %}
             <div class="mt-1 text-xs text-red-600">
               {% for error in form.horario.errors %}{{ error }}{% endfor %}

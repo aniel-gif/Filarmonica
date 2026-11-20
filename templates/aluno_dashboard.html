@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="space-y-6">
+  <div class="mb-4">
+    <h2 class="text-2xl font-bold text-slate-800">Olá, {{ aluno.nome }}!</h2>
+    <p class="text-slate-500">Aqui estão suas informações, empréstimos e próximos eventos.</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Meus Empréstimos -->
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+      <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center">
+        <i class="fa-solid fa-guitar mr-2 text-brand-red"></i> Meus Empréstimos
+      </h3>
+      <div class="space-y-4">
+        {% for emp in emprestimos %}
+        <div class="p-4 bg-slate-50 rounded-lg border border-slate-100">
+          <p class="font-semibold text-slate-800">{{ emp.instrumento.nome }}</p>
+          <p class="text-xs text-slate-600">Devolução prevista:
+             <span class="font-bold {{ 'text-red-600' if emp.data_devolucao_prevista < now else 'text-slate-600' }}">
+                {{ emp.data_devolucao_prevista.strftime('%d/%m/%Y') }}
+             </span>
+          </p>
+        </div>
+        {% else %}
+        <p class="text-sm text-slate-500">Nenhum empréstimo ativo no momento.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Próximos Eventos -->
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+      <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center">
+        <i class="fa-regular fa-calendar-check mr-2 text-brand-red"></i> Próximos Eventos
+      </h3>
+      <div class="space-y-4">
+        {% for evt in eventos %}
+        <div class="p-4 bg-slate-50 rounded-lg border border-slate-100">
+          <p class="font-semibold text-slate-800">{{ evt.nome }}</p>
+          <p class="text-xs text-slate-600">{{ evt.data.strftime('%d/%m/%Y') }} às {{ evt.horario }} | Local: {{ evt.local }}</p>
+        </div>
+        {% else %}
+        <p class="text-sm text-slate-500">Nenhum evento agendado.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

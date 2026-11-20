@@ -1,6 +1,6 @@
 import os
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from functools import wraps
 from dotenv import load_dotenv
 from flask import Flask, render_template, request, redirect, url_for, flash, session
@@ -66,6 +66,14 @@ def login():
         if user and check_password_hash(user.senha_hash, form.senha.data):
             session['usuario_id'] = user.id
             session['usuario_nome'] = user.nome
+
+            # Verifica se é um aluno vinculado
+            aluno_perfil = Aluno.query.filter_by(usuario_id=user.id).first()
+            if aluno_perfil:
+                session['aluno_id'] = aluno_perfil.id
+                flash('Login realizado com sucesso!', 'success')
+                return redirect(url_for('aluno_dashboard'))
+
             flash('Login realizado com sucesso!', 'success')
             return redirect(url_for('dashboard'))
         flash('E-mail ou senha incorretos.', 'danger')
@@ -217,7 +225,10 @@ def novo_evento():
     form = EventoForm()
     if form.validate_on_submit():
         from datetime import datetime as dt
-        h = dt.strptime(form.horario.data, '%H:%M').time() if form.horario.data else None
+        # O campo agora é um time object vindo do navegador
+        h = form.horario.data
+        if isinstance(h, str):
+             h = dt.strptime(h, '%H:%M').time()
 
         evt = Evento(
             nome=form.titulo.data,
@@ -233,7 +244,7 @@ def novo_evento():
         db.session.commit()
         flash('Evento cadastrado com sucesso!', 'success')
         return redirect(url_for('listar_eventos'))
-    return render_template('evento_form.html', form=form)
+    return render_template('evento_form.html', form=form, min_date=date.today().isoformat())
 
 @app.route('/eventos')
 @login_required
@@ -241,17 +252,17 @@ def listar_eventos():
     eventos = Evento.query.filter_by(usuario_id=session['usuario_id']).all()
     return render_template('eventos_list.html', eventos=eventos)
 
-@app.route('/eventos/deletar/<int:id>', methods=['POST'])
-@login_required
-def evento_deletar(id):
-    evento = Evento.query.get_or_404(id)
-    if evento.usuario_id != session['usuario_id']:
-        flash('Você não tem permissão para excluir este evento.', 'danger')
-        return redirect(url_for('listar_eventos'))
-    db.session.delete(evento)
-    db.session.commit()
-    flash('Evento excluído com sucesso!', 'success')
-    return redirect(url_for('listar_eventos'))
+@app.route('/aluno/dashboard')
+def aluno_dashboard():
+    if 'aluno_id' not in session:
+        flash('Acesso restrito a alunos.', 'danger')
+        return redirect(url_for('login'))
+
+    aluno = Aluno.query.get_or_404(session['aluno_id'])
+    emprestimos = Emprestimo.query.filter_by(aluno_id=aluno.id).all()
+    eventos = Evento.query.order_by(Evento.data.asc()).all()
+
+    return render_template('aluno_dashboard.html', aluno=aluno, emprestimos=emprestimos, eventos=eventos, now=datetime.now().date())
 
 @app.route('/emprestimos/deletar/<int:id>', methods=['POST'])
 @login_required

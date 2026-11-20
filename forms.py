@@ -1,17 +1,16 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, BooleanField, SelectField, DateField, DateTimeLocalField, TextAreaField
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, SelectField, DateField, DateTimeLocalField, TextAreaField, TimeField
 from wtforms.validators import DataRequired, Email, Length, Regexp, ValidationError
 from datetime import date
 
 
-def _validar_data_nascimento(form, field):
-    """Exige data de nascimento válida; a idade não é limitada."""
+def _validar_data_evento(form, field):
+    """Exige que a data do evento seja a partir de hoje (sem datas passadas)."""
     date_value = field.data
     if not date_value:
         return
-    hoje = date.today()
-    if date_value > hoje:
-        raise ValidationError('A data de nascimento não pode ser futura.')
+    if date_value < date.today():
+        raise ValidationError('A data do evento não pode ser anterior a hoje.')
 
 
 class LoginForm(FlaskForm):
@@ -65,8 +64,8 @@ class EmprestimoForm(FlaskForm):
 
 class EventoForm(FlaskForm):
     titulo = StringField('Nome do Evento', validators=[DataRequired(), Length(max=150)])
-    data = DateField('Data', validators=[DataRequired()], format='%Y-%m-%d')
-    horario = StringField('Horário', validators=[DataRequired(), Length(max=10)])
+    data = DateField('Data', validators=[DataRequired(), _validar_data_evento], format='%Y-%m-%d')
+    horario = TimeField('Horário', format='%H:%M', validators=[DataRequired()])
     local = StringField('Local', validators=[DataRequired(), Length(max=150)])
     responsavel = StringField('Responsável', default='Coordenação',
                               validators=[DataRequired(), Length(max=150)])
