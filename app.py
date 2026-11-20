@@ -1,4 +1,5 @@
 import os
+import secrets
 from datetime import datetime, timedelta
 from functools import wraps
 from dotenv import load_dotenv
@@ -17,7 +18,9 @@ app = Flask(__name__)
 # Configurações da Aplicação
 db_uri = os.getenv('DATABASE_URL', 'sqlite:///filarmonica.db')
 if db_uri.startswith('postgres://'):
-    db_uri = db_uri.replace('postgres://', 'postgresql://', 1)
+    db_uri = db_uri.replace('postgres://', 'postgresql+psycopg2://', 1)
+elif db_uri.startswith('postgresql://'):
+    db_uri = db_uri.replace('postgresql://', 'postgresql+psycopg2://', 1)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -25,6 +28,20 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'filarmonica-secret-key-12345
 
 db.init_app(app)
 csrf = CSRFProtect(app)
+
+# Inicialização do Banco de Dados para Produção
+with app.app_context():
+    db.create_all()
+    if not Usuario.query.filter_by(email='admin@filarmonica.org').first():
+        senha_admin = os.getenv('ADMIN_DEFAULT_PASSWORD', secrets.token_urlsafe(16))
+        admin = Usuario(
+            nome='Administrador',
+            email='admin@filarmonica.org',
+            senha_hash=generate_password_hash(senha_admin)
+        )
+        db.session.add(admin)
+        db.session.commit()
+        print(f"-> Usuário padrão verificado/criado. Senha inicial: {senha_admin}")
 
 def login_required(f):
     @wraps(f)
@@ -249,16 +266,4 @@ def emprestimo_deletar(id):
     return redirect(url_for('listar_emprestimos'))
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        if not Usuario.query.filter_by(email='admin@filarmonica.org').first():
-            admin = Usuario(
-                nome='Administrador',
-                email='admin@filarmonica.org',
-                senha_hash=generate_password_hash('admin123')
-            )
-            db.session.add(admin)
-            db.session.commit()
-            print("-> Usuário padrão criado: admin@filarmonica.org / admin123")
-
     app.run(debug=True)
