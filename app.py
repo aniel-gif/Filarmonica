@@ -41,7 +41,7 @@ with app.app_context():
         )
         db.session.add(admin)
         db.session.commit()
-        print(f"-> Usuário padrão verificado/criado. Senha inicial: {senha_admin}")
+        print("-> Usuário padrão verificado/criado. Senha gerada e registrada.")
 
 def login_required(f):
     @wraps(f)
