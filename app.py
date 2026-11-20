@@ -9,7 +9,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 # Importações dos ficheiros locais
 from models import db, Aluno, Instrumento, Emprestimo, Evento, Usuario
-from forms import LoginForm, AlunoForm, InstrumentoForm, EmprestimoForm, EventoForm
+from forms import LoginForm, AlunoForm, InstrumentoForm, EmprestimoForm, EventoForm, AlunoRegistroForm
 
 load_dotenv()
 
@@ -57,6 +57,44 @@ def index():
     if 'usuario_id' in session:
         return redirect(url_for('dashboard'))
     return redirect(url_for('login'))
+
+@app.route('/cadastro-aluno', methods=['GET', 'POST'])
+def cadastro_aluno():
+    form = AlunoRegistroForm()
+    if form.validate_on_submit():
+        # Verifica se o e-mail já está em uso
+        existing_user =Usuario.query.filter_by(email=form.email.data).first()
+        if existing_user:
+            flash('Este e-mail já está cadastro. Por favor, faça login.', 'danger')
+            return redirect(url_for('login'))
+
+        # Cria o Usuário
+        user =Usuario(
+            nome=form.nome.data,
+            email=form.email.data,
+            senha_hash=generate_password_hash(form.senha.data)
+        )
+        db.session.add(user)
+        db.session.commit()
+
+        # Cria o perfil de Aluno vinculado ao Usuário
+        aluno = Aluno(
+            nome=form.nome.data,
+            celular=form.celular.data,
+            data_nascimento=form.data_nascimento.data,
+            rua=form.rua.data,
+            numero=form.numero.data,
+            bairro=form.bairro.data,
+            usuario_id=user.id
+        )
+        db.session.add(aluno)
+        db.session.commit()
+
+        flash('Conta criada com sucesso! Faça login para continuar.', 'success')
+        return redirect(url_for('login'))
+
+    return render_template('cadastro_aluno.html', form=form)
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

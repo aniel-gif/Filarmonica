@@ -43,6 +43,25 @@ class AlunoForm(FlaskForm):
     submit = SubmitField(' Salvar aluno')
 
 
+class AlunoRegistroForm(FlaskForm):
+    """Formulário de auto-c cadastro para o perfil de aluno."""
+    nome = StringField('Nome completo', validators=[DataRequired()])
+    email = StringField('E-mail', validators=[DataRequired(), Email()])
+    senha = PasswordField('Senha', validators=[DataRequired(), Length(min=6)])
+    celular = StringField('Telemóvel/WhatsApp', validators=[
+        Regexp(r'^\(\d{2}\) \d{4,5}-\d{4}$',
+               message='Use o formato (00) 00000-0000 com apenas números.')
+    ])
+    data_nascimento = DateField('Data de Nascimento', format='%Y-%m-%d',
+                                validators=[DataRequired(), _validar_data_nascimento])
+    rua = StringField('Rua')
+    numero = StringField('Número', validators=[
+        Regexp(r'^\d{0,3}$', message='Apenas números, no máximo 3 dígitos.')
+    ])
+    bairro = StringField('Bairro')
+    submit = SubmitField(' Criar conta')
+
+
 class InstrumentoForm(FlaskForm):
     nome = StringField('Nome do Instrumento', validators=[DataRequired()])
     tombamento = StringField('Código do Instrumento')
