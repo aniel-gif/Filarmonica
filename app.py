@@ -131,6 +131,12 @@ def logout():
 
 # ==================== RECUPERAÇÃO DE SENHA ====================
 
+# Configuração de rate limiting em memória (simples, sem dependências externas)
+# Para produção com múltiplos workers, usar Redis ou banco de dados
+MAX_TOKENS_PER_USER = 1  # Máximo 1 ativo por usuário
+MAX_TOKENS_GLOBAL = 100  # Limite global para prevenir DoS
+recently_used_tokens = set()  # Para evitar reutilização de tokens
+
 # Token de recuperação de senha (em memória - substituir por banco em produção)
 # Estrutura: {token: {'user_id': int, 'expiry': float}}
 recovery_tokens = {}
@@ -141,8 +147,26 @@ def esqueci_minha_senha():
     form = RecuperarSenhaForm()
     if form.validate_on_submit():
         user = Usuario.query.filter_by(email=form.email.data).first()
+
         # Sempre mostra mensagem de sucesso para prevenir enumeração de e-mails
         if user:
+            # Limpa tokens expirados antigos
+            cleanup_tokens()
+
+            # Proteção contra DoS: limite global de tokens
+            if len(recovery_tokens) >= MAX_TOKENS_GLOBAL:
+                flash('Muitos pedidos de recuperação. Tente novamente mais tarde.', 'warning')
+                return render_template('esqueci_senha.html', form=form)
+
+            # Remove tokens antigos do usuário anterior (mantém só 1 ativo)
+            old_token = None
+            for t, data in list(recovery_tokens.items()):
+                if data['user_id'] == user.id:
+                    old_token = t
+                    break
+            if old_token:
+                del recovery_tokens[old_token]
+
             # Gera um token único para recuperação com expiração
             token = secrets.token_urlsafe(32)
             recovery_tokens[token] = {
@@ -161,22 +185,21 @@ def esqueci_minha_senha():
 
 @app.route('/recuperar-senha/<token>', methods=['GET', 'POST'])
 def recuperar_senha(token):
-    if token not in recovery_tokens:
+    # Uso atômico: get() e remoção em uma operação
+    token_data = recovery_tokens.pop(token, None)
+
+    if token_data is None:
         flash('Token inválido ou expirado.', 'danger')
         return redirect(url_for('esqueci_minha_senha'))
 
-    token_data = recovery_tokens[token]
-
-    # Verifica se o token expirou
+    # Verifica se o token expirou após a remoção atômica
     if time.time() > token_data['expiry']:
-        del recovery_tokens[token]
         flash('Token expirado. Solicite uma nova recuperação de senha.', 'warning')
         return redirect(url_for('esqueci_minha_senha'))
 
     form = NovaSenhaForm()
     if form.validate_on_submit():
         user_id = token_data['user_id']
-        del recovery_tokens[token]
         user = Usuario.query.get(user_id)
         if user:
             user.senha_hash = generate_password_hash(form.senha.data)
