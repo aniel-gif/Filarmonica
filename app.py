@@ -1,5 +1,6 @@
 import os
 import secrets
+import time
 from datetime import datetime, timedelta, date
 from functools import wraps
 from dotenv import load_dotenv
@@ -131,24 +132,30 @@ def logout():
 # ==================== RECUPERAÇÃO DE SENHA ====================
 
 # Token de recuperação de senha (em memória - substituir por banco em produção)
+# Estrutura: {token: {'user_id': int, 'expiry': float}}
 recovery_tokens = {}
+TOKEN_EXPIRY_SECONDS = 900  # 15 minutos
 
 @app.route('/esqueci-minha-senha', methods=['GET', 'POST'])
 def esqueci_minha_senha():
     form = RecuperarSenhaForm()
     if form.validate_on_submit():
         user = Usuario.query.filter_by(email=form.email.data).first()
+        # Sempre mostra mensagem de sucesso para prevenir enumeração de e-mails
         if user:
-            # Gera um token único para recuperação
+            # Gera um token único para recuperação com expiração
             token = secrets.token_urlsafe(32)
-            recovery_tokens[token] = user.id
+            recovery_tokens[token] = {
+                'user_id': user.id,
+                'expiry': time.time() + TOKEN_EXPIRY_SECONDS
+            }
             # Em produção, enviar email real
             # Por enquanto, armazenamos na sessão e mostramos o token
             session['recovery_email'] = form.email.data
-            flash(f'Código de recuperação: {token} (copie e cole na tela seguinte)', 'info')
+            flash(f'Código de recuperação: {token} (copie e cole na tela seguinte). Válido por 15 minutos.', 'info')
             return redirect(url_for('recuperar_senha', token=token))
-        else:
-            flash('E-mail não encontrado na base de dados.', 'warning')
+
+        flash('Se o e-mail existir na base de dados, um código foi enviado.', 'info')
     return render_template('esqueci_senha.html', form=form)
 
 
@@ -158,9 +165,18 @@ def recuperar_senha(token):
         flash('Token inválido ou expirado.', 'danger')
         return redirect(url_for('esqueci_minha_senha'))
 
+    token_data = recovery_tokens[token]
+
+    # Verifica se o token expirou
+    if time.time() > token_data['expiry']:
+        del recovery_tokens[token]
+        flash('Token expirado. Solicite uma nova recuperação de senha.', 'warning')
+        return redirect(url_for('esqueci_minha_senha'))
+
     form = NovaSenhaForm()
     if form.validate_on_submit():
-        user_id = recovery_tokens.pop(token)
+        user_id = token_data['user_id']
+        del recovery_tokens[token]
         user = Usuario.query.get(user_id)
         if user:
             user.senha_hash = generate_password_hash(form.senha.data)
@@ -173,9 +189,12 @@ def recuperar_senha(token):
 # Limpa tokens expirados periodicamente
 @app.before_request
 def cleanup_tokens():
-    # Limpa tokens antigos (mais de 15 minutos)
-    # Em produção, usar expiração no próprio token
-    pass
+    # Limpa tokens expirados (mais de 15 minutos)
+    current_time = time.time()
+    expired_tokens = [token for token, data in recovery_tokens.items()
+                      if current_time > data['expiry']]
+    for token in expired_tokens:
+        del recovery_tokens[token]
 
 
 @app.route('/dashboard')
