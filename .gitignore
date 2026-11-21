@@ -9,6 +9,9 @@ cookies.txt
 admin_password.txt
 .DS_Store
 
+# Scripts de manutenção (não versionar)
+reset_admin.py
+
 # Arquivos e caches temporários do Superpowers
 .superpowers/
 doc/superpowers/
