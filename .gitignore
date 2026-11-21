@@ -6,3 +6,6 @@ venv/
 instance/
 *.db
 cookies.txt
+admin_password.txt
+.DS_Store
+
