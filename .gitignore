@@ -9,3 +9,9 @@ cookies.txt
 admin_password.txt
 .DS_Store
 
+# Arquivos e caches temporários do Superpowers
+.superpowers/
+doc/superpowers/
+docs/superpowers/
+
+
