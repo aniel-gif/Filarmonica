@@ -1,55 +1,73 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="space-y-6">
-    <div class="flex justify-between items-center">
-        <div>
-            <h2 class="text-2xl font-bold text-slate-800">Histórico de Empréstimos</h2>
-            <p class="text-sm text-slate-500">Acompanhe os instrumentos atualmente emprestados e devoluções.</p>
-        </div>
+<div class="space-y-8">
+  <!-- Cabeçalho -->
+  <div class="animate-fadeInUp">
+    <h1 class="text-3xl font-bold text-slate-800 mb-2">Histórico de Empréstimos</h1>
+    <p class="text-slate-500">Acompanhe os instrumentos atualmente emprestados e devoluções.</p>
+  </div>
+
+  <!-- Tabela de empréstimos -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-fadeInUp">
+    <div class="p-5 border-b border-slate-100 flex justify-between items-center">
+      <h3 class="font-bold text-slate-800 text-lg">Lista de Empréstimos</h3>
+      <a href="{{ url_for('novo_emprestimo') }}" class="bg-gradient-to-r from-brand-green to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center gap-2">
+        <i class="fa-solid fa-plus"></i> Novo Empréstimo
+      </a>
     </div>
 
-    <!-- Tabela de empréstimos -->
-    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs border-collapse">
-                <thead>
-                    <tr class="bg-slate-50 text-slate-500 uppercase font-semibold border-b border-slate-200">
-                        <th class="p-3">Instrumento</th>
-                        <th class="p-3">Aluno</th>
-                        <th class="p-3">Data Empréstimo</th>
-                        <th class="p-3">Previsão Devolução</th>
-                        <th class="p-3">Status</th>
-                        <th class="p-3 text-right">Ação</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                    {% for emp in emprestimos %}
-                    <tr class="hover:bg-slate-50">
-                        <td class="p-3 font-semibold text-slate-800">{{ emp.instrumento.nome }}</td>
-                        <td class="p-3 text-slate-600">{{ emp.aluno.nome }}</td>
-                        <td class="p-3 text-slate-500">{{ emp.data_emprestimo.strftime('%d/%m/%Y') }}</td>
-                        <td class="p-3 text-slate-500">{{ emp.data_devolucao_prevista.strftime('%d/%m/%Y') }}</td>
-                        <td class="p-3">
-                            <span class="px-2 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700">Em andamento</span>
-                        </td>
-                        <td class="p-3 text-right">
-                            <form action="{{ url_for('emprestimo_deletar', id=emp.id) }}" method="POST" class="inline">
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="text-red-600 hover:text-red-800 font-semibold" onclick="return confirm('Deseja excluir este empréstimo?')">Excluir</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="p-8 text-center text-slate-400">
-                            Nenhum empréstimo registrado no momento.
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm border-collapse">
+        <thead>
+          <tr class="bg-slate-50 text-slate-500 uppercase font-semibold">
+            <th class="p-4">Instrumento</th>
+            <th class="p-4">Aluno</th>
+            <th class="p-4">Data Empréstimo</th>
+            <th class="p-4">Previsão Devolução</th>
+            <th class="p-4">Status</th>
+            <th class="p-4">Ações</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for emp in emprestimos %}
+          <tr class="hover:bg-slate-50 transition-colors duration-150">
+            <td class="p-4 font-semibold text-slate-800">{{ emp.instrumento.nome }}</td>
+            <td class="p-4 text-slate-600">{{ emp.aluno.nome }}</td>
+            <td class="p-4 text-slate-500">{{ emp.data_emprestimo.strftime('%d/%m/%Y') if emp.data_emprestimo else '-' }}</td>
+            <td class="p-4 text-slate-500">{{ emp.data_devolucao_prevista.strftime('%d/%m/%Y') if emp.data_devolucao_prevista else '-' }}</td>
+            <td class="p-4">
+              <span class="px-3 py-1 text-xs font-bold text-amber-700 bg-amber-100 rounded-full">
+                {{ emp.status }}
+              </span>
+            </td>
+            <td class="p-4">
+              <form action="{{ url_for('emprestimo_deletar', id=emp.id) }}" method="POST" style="display:inline" onsubmit="return confirm('Deseja excluir este empréstimo?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="text-red-600 hover:text-red-800 transition-colors">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="6" class="p-8 text-center text-slate-400">Nenhum empréstimo registrado no momento.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
+  </div>
 </div>
+
+<style>
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fadeInUp {
+    animation: fadeInUp 0.5s ease-out forwards;
+  }
+</style>
 {% endblock %}

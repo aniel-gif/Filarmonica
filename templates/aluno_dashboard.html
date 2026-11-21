@@ -1,50 +1,106 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="space-y-6">
-  <div class="mb-4">
-    <h2 class="text-2xl font-bold text-slate-800">Olá, {{ aluno.nome }}!</h2>
-    <p class="text-slate-500">Aqui estão suas informações, empréstimos e próximos eventos.</p>
-  </div>
-
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <!-- Meus Empréstimos -->
-    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-      <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center">
-        <i class="fa-solid fa-guitar mr-2 text-brand-red"></i> Meus Empréstimos
-      </h3>
-      <div class="space-y-4">
-        {% for emp in emprestimos %}
-        <div class="p-4 bg-slate-50 rounded-lg border border-slate-100">
-          <p class="font-semibold text-slate-800">{{ emp.instrumento.nome }}</p>
-          <p class="text-xs text-slate-600">Devolução prevista:
-             <span class="font-bold {{ 'text-red-600' if emp.data_devolucao_prevista < now else 'text-slate-600' }}">
-                {{ emp.data_devolucao_prevista.strftime('%d/%m/%Y') }}
-             </span>
-          </p>
-        </div>
-        {% else %}
-        <p class="text-sm text-slate-500">Nenhum empréstimo ativo no momento.</p>
-        {% endfor %}
+<div class="space-y-8">
+  <!-- Cabeçalho do Aluno -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 animate-fadeInUp">
+    <div class="flex items-center gap-6">
+      <div class="w-20 h-20 bg-gradient-to-r from-brand-red to-red-700 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg">
+        {{ aluno.nome[0] if aluno.nome else 'A' }}
+      </div>
+      <div>
+        <h2 class="text-2xl font-bold text-slate-800">Olá, {{ aluno.nome }}!</h2>
+        <p class="text-slate-500">Bem-vindo à sua área do aluno</p>
       </div>
     </div>
+  </div>
 
-    <!-- Próximos Eventos -->
-    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-      <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center">
-        <i class="fa-regular fa-calendar-check mr-2 text-brand-red"></i> Próximos Eventos
+  <!-- Meus Empréstimos -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-fadeInUp">
+    <div class="p-5 border-b border-slate-100">
+      <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+        <i class="fa-solid fa-handshake text-brand-red"></i>
+        Meus Empréstimos
       </h3>
-      <div class="space-y-4">
-        {% for evt in eventos %}
-        <div class="p-4 bg-slate-50 rounded-lg border border-slate-100">
-          <p class="font-semibold text-slate-800">{{ evt.nome }}</p>
-          <p class="text-xs text-slate-600">{{ evt.data.strftime('%d/%m/%Y') }} às {{ evt.horario }} | Local: {{ evt.local }}</p>
-        </div>
-        {% else %}
-        <p class="text-sm text-slate-500">Nenhum evento agendado.</p>
-        {% endfor %}
-      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm border-collapse">
+        <thead>
+          <tr class="bg-slate-50 text-slate-500 uppercase font-semibold">
+            <th class="p-4">Instrumento</th>
+            <th class="p-4">Data Empréstimo</th>
+            <th class="p-4">Previsão Devolução</th>
+            <th class="p-4">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for emp in emprestimos %}
+          <tr class="hover:bg-slate-50 transition-colors duration-150">
+            <td class="p-4 font-semibold text-slate-800">{{ emp.instrumento.nome }}</td>
+            <td class="p-4 text-slate-600">{{ emp.data_emprestimo.strftime('%d/%m/%Y') if emp.data_emprestimo else '-' }}</td>
+            <td class="p-4 text-slate-500">{{ emp.data_devolucao_prevista.strftime('%d/%m/%Y') if emp.data_devolucao_prevista else '-' }}</td>
+            <td class="p-4">
+              <span class="px-3 py-1 text-xs font-bold rounded-full {% if emp.status == 'Em andamento' %}bg-amber-100 text-amber-700{% else %}bg-emerald-100 text-emerald-700{% endif %}">
+                {{ emp.status }}
+              </span>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="4" class="p-8 text-center text-slate-400">Nenhum empréstimo registrado.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Próximos Eventos -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-fadeInUp">
+    <div class="p-5 border-b border-slate-100">
+      <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+        <i class="fa-solid fa-calendar-days text-brand-red"></i>
+        Próximos Eventos
+      </h3>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm border-collapse">
+        <thead>
+          <tr class="bg-slate-50 text-slate-500 uppercase font-semibold">
+            <th class="p-4">Evento</th>
+            <th class="p-4">Data</th>
+            <th class="p-4">Horário</th>
+            <th class="p-4">Local</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for evt in eventos %}
+          <tr class="hover:bg-slate-50 transition-colors duration-150">
+            <td class="p-4 font-semibold text-slate-800">{{ evt.titulo }}</td>
+            <td class="p-4 text-slate-600">{{ evt.data.strftime('%d/%m/%Y') if evt.data else '-' }}</td>
+            <td class="p-4 text-slate-500">{{ evt.horario }}</td>
+            <td class="p-4 text-slate-500">{{ evt.local }}</td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="4" class="p-8 text-center text-slate-400">Nenhum evento agendado.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
+
+<style>
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fadeInUp {
+    animation: fadeInUp 0.5s ease-out forwards;
+  }
+</style>
 {% endblock %}

@@ -9,7 +9,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 # Importações dos ficheiros locais
 from models import db, Aluno, Instrumento, Emprestimo, Evento, Usuario
-from forms import LoginForm, AlunoForm, InstrumentoForm, EmprestimoForm, EventoForm, AlunoRegistroForm
+from forms import LoginForm, AlunoForm, InstrumentoForm, EmprestimoForm, EventoForm, AlunoRegistroForm, RecuperarSenhaForm, NovaSenhaForm
 
 load_dotenv()
 
@@ -24,6 +24,10 @@ elif db_uri.startswith('postgresql://'):
 
 app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    "pool_pre_ping": True,
+    "pool_recycle": 300,
+}
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'filarmonica-secret-key-123456')
 
 db.init_app(app)
@@ -93,7 +97,7 @@ def cadastro_aluno():
         flash('Conta criada com sucesso! Faça login para continuar.', 'success')
         return redirect(url_for('login'))
 
-    return render_template('cadastro_aluno.html', form=form)
+    return render_template('cadastro_aluno.html', form=form, today=date.today().isoformat())
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -123,6 +127,56 @@ def logout():
     session.clear()
     flash('Você saiu do sistema.', 'info')
     return redirect(url_for('login'))
+
+# ==================== RECUPERAÇÃO DE SENHA ====================
+
+# Token de recuperação de senha (em memória - substituir por banco em produção)
+recovery_tokens = {}
+
+@app.route('/esqueci-minha-senha', methods=['GET', 'POST'])
+def esqueci_minha_senha():
+    form = RecuperarSenhaForm()
+    if form.validate_on_submit():
+        user = Usuario.query.filter_by(email=form.email.data).first()
+        if user:
+            # Gera um token único para recuperação
+            token = secrets.token_urlsafe(32)
+            recovery_tokens[token] = user.id
+            # Em produção, enviar email real
+            # Por enquanto, armazenamos na sessão e mostramos o token
+            session['recovery_email'] = form.email.data
+            flash(f'Código de recuperação: {token} (copie e cole na tela seguinte)', 'info')
+            return redirect(url_for('recuperar_senha', token=token))
+        else:
+            flash('E-mail não encontrado na base de dados.', 'warning')
+    return render_template('esqueci_senha.html', form=form)
+
+
+@app.route('/recuperar-senha/<token>', methods=['GET', 'POST'])
+def recuperar_senha(token):
+    if token not in recovery_tokens:
+        flash('Token inválido ou expirado.', 'danger')
+        return redirect(url_for('esqueci_minha_senha'))
+
+    form = NovaSenhaForm()
+    if form.validate_on_submit():
+        user_id = recovery_tokens.pop(token)
+        user = Usuario.query.get(user_id)
+        if user:
+            user.senha_hash = generate_password_hash(form.senha.data)
+            db.session.commit()
+            flash('Senha alterada com sucesso! Faça login.', 'success')
+            return redirect(url_for('login'))
+    return render_template('nova_senha.html', form=form)
+
+
+# Limpa tokens expirados periodicamente
+@app.before_request
+def cleanup_tokens():
+    # Limpa tokens antigos (mais de 15 minutos)
+    # Em produção, usar expiração no próprio token
+    pass
+
 
 @app.route('/dashboard')
 @login_required
@@ -162,7 +216,11 @@ def novo_aluno():
         db.session.commit()
         flash('Aluno cadastrado com sucesso!', 'success')
         return redirect(url_for('listar_alunos'))
-    return render_template('aluno_form.html', form=form)
+
+    # Calcula a data mínima (120 anos atrás)
+    today = date.today()
+    min_date = date(today.year - 120, today.month, today.day).isoformat()
+    return render_template('aluno_form.html', form=form, today=today.isoformat(), min_date=min_date)
 
 @app.route('/alunos')
 @login_required

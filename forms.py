@@ -1,16 +1,22 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField, BooleanField, SelectField, DateField, DateTimeLocalField, TextAreaField, TimeField
-from wtforms.validators import DataRequired, Email, Length, Regexp, ValidationError
+from wtforms.validators import DataRequired, Email, Length, Regexp, ValidationError, EqualTo
 from datetime import date
 
 
 def _validar_data_nascimento(form, field):
-    """Exige data de nascimento válida; não pode ser futura."""
+    """Exige data de nascimento válida; não pode ser futura e deve ter idade razoável."""
     date_value = field.data
     if not date_value:
         return
-    if date_value > date.today():
+    today = date.today()
+    if date_value > today:
         raise ValidationError('A data de nascimento não pode ser futura.')
+
+    # Limita idade máxima a 120 anos (nascidos a partir de 1904 aprox)
+    idade_minima_data = date(today.year - 120, today.month, today.day)
+    if date_value < idade_minima_data:
+        raise ValidationError('A data de nascimento indica uma idade superior a 120 anos.')
 
 def _validar_data_evento(form, field):
     """Exige que a data do evento seja a partir de hoje (sem datas passadas)."""
@@ -103,3 +109,14 @@ class EventoForm(FlaskForm):
         ('Cancelado', 'Cancelado')
     ], default='Agendado')
     submit = SubmitField(' Salvar evento')
+
+
+class RecuperarSenhaForm(FlaskForm):
+    email = StringField('E-mail', validators=[DataRequired(), Email()])
+    submit = SubmitField('Enviar Código de Recuperação')
+
+
+class NovaSenhaForm(FlaskForm):
+    senha = PasswordField('Nova Senha', validators=[DataRequired(), Length(min=6)])
+    confirmar_senha = PasswordField('Confirmar Nova Senha', validators=[DataRequired(), EqualTo('senha', message='As senhas não coincidem.')])
+    submit = SubmitField('Alterar Senha')

@@ -2,53 +2,55 @@
 
 {% block content %}
 <div class="space-y-6">
-  <div class="flex items-center space-x-3 mb-4">
-    <i class="fa-regular fa-calendar-plus text-2xl text-brand-red"></i>
+  <div class="flex items-center space-x-3 mb-6">
+    <div class="w-12 h-12 bg-gradient-to-r from-brand-red to-red-700 rounded-full flex items-center justify-center">
+      <i class="fa-solid fa-calendar-plus text-white text-lg"></i>
+    </div>
     <h2 class="text-2xl font-bold text-slate-800">Cadastro de eventos</h2>
   </div>
 
-  <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm max-w-3xl">
-    <h3 class="text-sm font-semibold text-brand-red border-b pb-2 mb-6">Dados do evento ou atividade</h3>
+  <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm max-w-3xl">
+    <h3 class="text-sm font-semibold text-brand-red border-b-2 border-brand-red pb-2 mb-6">Dados do evento ou atividade</h3>
 
-    <form method="POST" action="{{ url_for('novo_evento') }}" class="space-y-4">
+    <form method="POST" action="{{ url_for('novo_evento') }}" class="space-y-6">
       {{ form.hidden_tag() }}
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="md:col-span-2">
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Evento ou atividade *</label>
-          {{ form.titulo(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.titulo.errors else ""), placeholder="Ex.: Ensaio Geral, Concerto de Primavera") }}
+          <label class="block text-sm font-semibold text-slate-700 mb-2">Evento ou atividade *</label>
+          {{ form.titulo(class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-3 focus:ring-brand-red/30 focus:border-brand-red transition-all duration-300 text-sm" + (" border-red-500" if form.titulo.errors else "") + (" placeholder-slate-400" if not form.titulo.errors else ""), placeholder="Ex.: Ensaio Geral, Concerto de Primavera") }}
           {% if form.titulo.errors %}
-            <div class="mt-1 text-xs text-red-600">
+            <div class="mt-2 text-xs text-red-600">
               {% for error in form.titulo.errors %}{{ error }}{% endfor %}
             </div>
           {% endif %}
         </div>
         <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Data *</label>
-          {{ form.data(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.data.errors else ""), type="date", min=min_date) }}
+          <label class="block text-sm font-semibold text-slate-700 mb-2">Data *</label>
+          {{ form.data(class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-3 focus:ring-brand-red/30 focus:border-brand-red transition-all duration-300 text-sm" + (" border-red-500" if form.data.errors else ""), type="date", min=min_date) }}
           {% if form.data.errors %}
-            <div class="mt-1 text-xs text-red-600">
+            <div class="mt-2 text-xs text-red-600">
               {% for error in form.data.errors %}{{ error }}{% endfor %}
             </div>
           {% endif %}
         </div>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div class="md:col-span-2">
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Local *</label>
-          {{ form.local(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.local.errors else ""), placeholder="Ex.: Teatro Municipal, Auditório da Escola") }}
+          <label class="block text-sm font-semibold text-slate-700 mb-2">Local *</label>
+          {{ form.local(class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-3 focus:ring-brand-red/30 focus:border-brand-red transition-all duration-300 text-sm" + (" border-red-500" if form.local.errors else "") + (" placeholder-slate-400" if not form.local.errors else ""), placeholder="Ex.: Teatro Municipal, Auditório da Escola") }}
           {% if form.local.errors %}
-            <div class="mt-1 text-xs text-red-600">
+            <div class="mt-2 text-xs text-red-600">
               {% for error in form.local.errors %}{{ error }}{% endfor %}
             </div>
           {% endif %}
         </div>
         <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Horário *</label>
-          {{ form.horario(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.horario.errors else ""), type="time") }}
+          <label class="block text-sm font-semibold text-slate-700 mb-2">Horário *</label>
+          {{ form.horario(class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-3 focus:ring-brand-red/30 focus:border-brand-red transition-all duration-300 text-sm" + (" border-red-500" if form.horario.errors else "")) }}
           {% if form.horario.errors %}
-            <div class="mt-1 text-xs text-red-600">
+            <div class="mt-2 text-xs text-red-600">
               {% for error in form.horario.errors %}{{ error }}{% endfor %}
             </div>
           {% endif %}
@@ -56,24 +58,34 @@
       </div>
 
       <div>
-        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Descrição *</label>
-        {{ form.memoria(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.memoria.errors else ""), rows="3", placeholder="Descrição detalhada do evento...") }}
+        <label class="block text-sm font-semibold text-slate-700 mb-2">Descrição *</label>
+        {{ form.memoria(class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-3 focus:ring-brand-red/30 focus:border-brand-red transition-all duration-300 text-sm resize-y" + (" border-red-500" if form.memoria.errors else ""), rows="3", placeholder="Descrição detalhada do evento...") }}
         {% if form.memoria.errors %}
-          <div class="mt-1 text-xs text-red-600">
+          <div class="mt-2 text-xs text-red-600">
             {% for error in form.memoria.errors %}{{ error }}{% endfor %}
           </div>
         {% endif %}
       </div>
 
-      <div class="flex justify-start space-x-4 pt-6">
-        <a href="{{ url_for('dashboard') }}" class="px-6 py-2.5 border border-brand-red text-brand-red rounded-lg font-semibold text-sm hover:bg-red-50 transition">
+      <div class="flex justify-start space-x-4 pt-4">
+        <a href="{{ url_for('listar_eventos') }}" class="px-6 py-3 border border-brand-red text-brand-red rounded-xl font-semibold text-sm hover:bg-red-50 transition-all duration-300 flex items-center gap-2">
           <i class="fa-solid fa-xmark mr-1"></i> Cancelar
         </a>
-        <button type="submit" class="px-6 py-2.5 bg-brand-green text-white rounded-lg font-semibold text-sm hover:bg-green-700 transition shadow">
-          Cadastrar evento
+        <button type="submit" class="px-6 py-3 bg-gradient-to-r from-brand-green to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold text-sm hover:shadow-green-500/25 transition-all duration-300 flex items-center gap-2">
+          <i class="fa-solid fa-check mr-1"></i>Cadastrar evento
         </button>
       </div>
     </form>
   </div>
 </div>
+
+<style>
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fadeInUp {
+    animation: fadeInUp 0.5s ease-out forwards;
+  }
+</style>
 {% endblock %}

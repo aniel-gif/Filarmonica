@@ -2,52 +2,55 @@
 
 {% block content %}
 <div class="space-y-6">
-  <div class="flex items-center space-x-3 mb-2">
-    <i class="fa-solid fa-file-pen text-2xl text-brand-red"></i>
-    <h2 class="text-2xl font-bold text-slate-800">Registro de empréstimo de instrumento</h2>
+  <div class="flex items-center space-x-3 mb-6">
+    <div class="w-12 h-12 bg-gradient-to-r from-brand-green to-green-600 rounded-full flex items-center justify-center">
+      <i class="fa-solid fa-handshake text-white text-lg"></i>
+    </div>
+    <h2 class="text-2xl font-bold text-slate-800">Cadastro de empréstimo</h2>
   </div>
-  <p class="text-xs text-slate-500 max-w-xl">Preencha os dados abaixo para registrar o empréstimo de um instrumento ao aluno selecionado.</p>
 
-  <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm max-w-2xl">
-    <form method="POST" action="{{ url_for('novo_emprestimo') }}" class="space-y-4">
+  <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm max-w-3xl">
+    <h3 class="text-sm font-semibold text-brand-red border-b-2 border-brand-red pb-2 mb-6">Novo empréstimo</h3>
+
+    <form method="POST" action="{{ url_for('novo_emprestimo') }}" class="space-y-6">
       {{ form.hidden_tag() }}
 
-      <div>
-        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nome completo do aluno</label>
-        {{ form.aluno_id(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.aluno_id.errors else "")) }}
-        {% if form.aluno_id.errors %}
-          <div class="mt-1 text-xs text-red-600">
-            {% for error in form.aluno_id.errors %}{{ error }}{% endfor %}
-          </div>
-        {% endif %}
+      <div class="space-y-6">
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">Aluno *</label>
+          {{ form.aluno_id(class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-3 focus:ring-brand-red/30 focus:border-brand-red transition-all duration-300 text-sm bg-white") }}
+        </div>
+
+        <div>
+          <label class="block text-sm font-semibold text-slate-700 mb-2">Instrumento *</label>
+          {{ form.instrumento_id(class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-3 focus:ring-brand-red/30 focus:border-brand-red transition-all duration-300 text-sm bg-white") }}
+        </div>
       </div>
 
-      <div>
-        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Instrumento emprestado</label>
-        {{ form.instrumento_id(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.instrumento_id.errors else "")) }}
-        {% if form.instrumento_id.errors %}
-          <div class="mt-1 text-xs text-red-600">
-            {% for error in form.instrumento_id.errors %}{{ error }}{% endfor %}
-          </div>
-        {% endif %}
+      <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-4">
+        <p class="text-xs text-slate-600 mb-2"><strong>Duração padrão:</strong> 15 dias</p>
+        <p class="text-xs text-slate-500">O empréstimo será encerrado automaticamente na data prevista.</p>
       </div>
 
-      <div class="space-y-4">
-        <p class="text-xs text-slate-500 bg-amber-50 p-3 rounded-lg border border-amber-200">
-          <i class="fa-solid fa-circle-info mr-1 text-amber-600"></i>
-          O empréstimo será registrado com a data de hoje e a devolução será agendada automaticamente para daqui a 15 dias.
-        </p>
-      </div>
-
-      <div class="flex justify-start space-x-4 pt-6">
-        <a href="{{ url_for('dashboard') }}" class="px-6 py-2.5 border border-brand-red text-brand-red rounded-lg font-semibold text-sm hover:bg-red-50 transition">
+      <div class="flex justify-start space-x-4 pt-4">
+        <a href="{{ url_for('listar_emprestimos') }}" class="px-6 py-3 border border-brand-red text-brand-red rounded-xl font-semibold text-sm hover:bg-red-50 transition-all duration-300 flex items-center gap-2">
           <i class="fa-solid fa-xmark mr-1"></i> Cancelar
         </a>
-        <button type="submit" class="px-6 py-2.5 bg-brand-green text-white rounded-lg font-semibold text-sm hover:bg-green-700 transition shadow">
-          Salvar empréstimo
+        <button type="submit" class="px-6 py-3 bg-gradient-to-r from-brand-green to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold text-sm hover:shadow-green-500/25 transition-all duration-300 flex items-center gap-2">
+          <i class="fa-solid fa-save mr-1"></i>Registrar empréstimo
         </button>
       </div>
     </form>
   </div>
 </div>
+
+<style>
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fadeInUp {
+    animation: fadeInUp 0.5s ease-out forwards;
+  }
+</style>
 {% endblock %}

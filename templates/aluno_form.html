@@ -2,49 +2,52 @@
 
 {% block content %}
 <div class="space-y-6">
-  <div class="flex items-center space-x-3 mb-4">
-    <i class="fa-solid fa-user-plus text-2xl text-brand-red"></i>
+  <div class="flex items-center space-x-3 mb-6">
+    <div class="w-12 h-12 bg-gradient-to-r from-brand-red to-red-700 rounded-full flex items-center justify-center">
+      <i class="fa-solid fa-user-plus text-white text-lg"></i>
+    </div>
     <h2 class="text-2xl font-bold text-slate-800">Cadastro de alunos</h2>
   </div>
 
-  <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm max-w-3xl">
-    <form method="POST" action="{{ url_for('novo_aluno') }}" class="space-y-6">
+  <div class="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-slate-200 p-6 max-w-3xl">
+    <form method="POST" action="{{ url_for('novo_aluno') }}" class="space-y-8">
       {{ form.hidden_tag() }}
 
       <!-- 1. DADOS PESSOAIS -->
       <div>
-        <h3 class="text-sm font-semibold text-brand-red border-b pb-2 mb-4">1. Dados pessoais</h3>
-        
-        <div class="space-y-4">
+        <h3 class="text-sm font-semibold text-brand-red border-b-2 border-brand-red pb-2 mb-6">1. Dados pessoais</h3>
+
+        <div class="space-y-6">
           <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nome completo do aluno</label>
-            {{ form.nome(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.nome.errors else ""), placeholder="Digite o nome completo") }}
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Nome completo do aluno *</label>
+            {{ form.nome(class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-3 focus:ring-brand-red/30 focus:border-brand-red transition-all duration-300 text-sm placeholder-slate-400" + (" border-red-500" if form.nome.errors else "") + (" placeholder-slate-400" if not form.nome.errors else "")) }}
             {% if form.nome.errors %}
-              <div class="mt-1 text-xs text-red-600">
+              <div class="mt-2 text-xs text-red-600">
                 {% for error in form.nome.errors %}{{ error }}{% endfor %}
               </div>
             {% endif %}
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Número de celular</label>
-              {{ form.celular(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.celular.errors else ""), placeholder="(00) 00000-0000",
+              <label class="block text-sm font-semibold text-slate-700 mb-2">Número de celular</label>
+              {{ form.celular(class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-3 focus:ring-brand-red/30 focus:border-brand-red transition-all duration-300 text-sm" + (" border-red-500" if form.celular.errors else "") + (" placeholder-slate-400" if not form.celular.errors else ""),
+                  placeholder="(00) 00000-0000",
                   oninput="formatarCelular(this)",
                   onblur="formatarCelular(this)",
                   maxlength="15") }}
               {% if form.celular.errors %}
-                <div class="mt-1 text-xs text-red-600">
+                <div class="mt-2 text-xs text-red-600">
                   {% for error in form.celular.errors %}{{ error }}{% endfor %}
                 </div>
               {% endif %}
             </div>
 
             <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Data de nascimento</label>
-              {{ form.data_nascimento(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 pr-10 text-sm" + (" border-red-500" if form.data_nascimento.errors else ""), type="date") }}
+              <label class="block text-sm font-semibold text-slate-700 mb-2">Data de nascimento *</label>
+              {{ form.data_nascimento(class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-3 focus:ring-brand-red/30 focus:border-brand-red transition-all duration-300 text-sm" + (" border-red-500" if form.data_nascimento.errors else ""), type="date", max=today, min=min_date, oninput="validarDataNascimento(this)", onchange="validarDataNascimento(this)") }}
               {% if form.data_nascimento.errors %}
-                <div class="mt-1 text-xs text-red-600">
+                <div class="mt-2 text-xs text-red-600">
                   {% for error in form.data_nascimento.errors %}{{ error }}{% endfor %}
                 </div>
               {% endif %}
@@ -55,31 +58,31 @@
 
       <!-- 2. ENDEREÇO -->
       <div>
-        <h3 class="text-sm font-semibold text-brand-red border-b pb-2 mb-4">2. Endereço</h3>
+        <h3 class="text-sm font-semibold text-brand-red border-b-2 border-brand-red pb-2 mb-6">2. Endereço</h3>
 
-        <div class="space-y-4">
+        <div class="space-y-6">
           <!-- Linha com Rua (maior) e Número (menor) lado a lado -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div class="md:col-span-2">
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Rua / Logradouro</label>
-              {{ form.rua(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.rua.errors else ""), placeholder="Nome da rua") }}
+              <label class="block text-sm font-semibold text-slate-700 mb-2">Rua / Logradouro</label>
+              {{ form.rua(class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-3 focus:ring-brand-red/30 focus:border-brand-red transition-all duration-300 text-sm placeholder-slate-400" + (" border-red-500" if form.rua.errors else "") + (" placeholder-slate-400" if not form.rua.errors else "")) }}
               {% if form.rua.errors %}
-                <div class="mt-1 text-xs text-red-600">
+                <div class="mt-2 text-xs text-red-600">
                   {% for error in form.rua.errors %}{{ error }}{% endfor %}
                 </div>
               {% endif %}
             </div>
 
             <div>
-              <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Número</label>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">Número</label>
               {{ form.numero(
-                  class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.numero.errors else ""),
-                  placeholder="Ex: 123",
+                  class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-3 focus:ring-brand-red/30 focus:border-brand-red transition-all duration-300 text-sm" + (" border-red-500" if form.numero.errors else "") + (" placeholder-slate-400" if not form.numero.errors else ""),
+                  placeholder="123",
                   maxlength="3",
                   oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 3);"
               ) }}
               {% if form.numero.errors %}
-                <div class="mt-1 text-xs text-red-600">
+                <div class="mt-2 text-xs text-red-600">
                   {% for error in form.numero.errors %}{{ error }}{% endfor %}
                 </div>
               {% endif %}
@@ -88,10 +91,10 @@
 
           <!-- Bairro ocupando toda a largura -->
           <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Bairro</label>
-            {{ form.bairro(class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-red-500 text-sm" + (" border-red-500" if form.bairro.errors else ""), placeholder="Nome do bairro") }}
+            <label class="block text-sm font-semibold text-slate-700 mb-2">Bairro</label>
+            {{ form.bairro(class="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-3 focus:ring-brand-red/30 focus:border-brand-red transition-all duration-300 text-sm placeholder-slate-400" + (" border-red-500" if form.bairro.errors else "")) }}
             {% if form.bairro.errors %}
-              <div class="mt-1 text-xs text-red-600">
+              <div class="mt-2 text-xs text-red-600">
                 {% for error in form.bairro.errors %}{{ error }}{% endfor %}
               </div>
             {% endif %}
@@ -101,11 +104,11 @@
 
       <!-- BOTÕES DE AÇÃO -->
       <div class="flex justify-start space-x-4 pt-4 border-t border-slate-100">
-        <a href="{{ url_for('dashboard') }}" class="px-6 py-2.5 border border-brand-red text-brand-red rounded-lg font-semibold text-sm hover:bg-red-50 transition">
+        <a href="{{ url_for('dashboard') }}" class="px-6 py-3 border border-brand-red text-brand-red rounded-xl font-semibold text-sm hover:bg-red-50 transition-all duration-300 flex items-center gap-2">
           <i class="fa-solid fa-xmark mr-1"></i> Cancelar
         </a>
-        <button type="submit" class="px-6 py-2.5 bg-brand-green text-white rounded-lg font-semibold text-sm hover:bg-green-700 transition shadow">
-          Cadastrar aluno
+        <button type="submit" class="px-6 py-3 bg-gradient-to-r from-brand-green to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl font-semibold text-sm hover:shadow-green-500/25 transition-all duration-300 flex items-center gap-2">
+          <i class="fa-solid fa-check mr-1"></i>Cadastrar aluno
         </button>
       </div>
     </form>
@@ -124,6 +127,20 @@ function formatarCelular(input) {
     value = `(${value}`;
   }
   input.value = value;
+}
+
+function validarDataNascimento(input) {
+  if (input.value) {
+    const hojeStr = new Date().toISOString().split('T')[0];
+    if (input.max && input.value > input.max) {
+      input.value = input.max;
+    } else if (input.value > hojeStr) {
+      input.value = hojeStr;
+    }
+    if (input.min && input.value < input.min) {
+      input.value = input.min;
+    }
+  }
 }
 </script>
 {% endblock %}

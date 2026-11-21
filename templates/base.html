@@ -4,112 +4,113 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Filarmônica Francisco Batista dos Santos Lula</title>
-  <!-- CSS Tailwind Standalone (Sem JS) -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
   <!-- Google Fonts: Inter -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <!-- FontAwesome Icons (Apenas CSS) -->
+  <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Favicon -->
+  <link rel="icon" href="{{ url_for('static', filename='images/logo.svg') }}" type="image/svg+xml">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen">
+<body class="bg-slate-100 text-slate-800 min-h-screen font-inter">
 
   {% if session.get('usuario_id') %}
-  <div class="min-h-screen flex flex-col md:flex-row">
-    
-    <!-- Sidebar / Menu Lateral -->
-    <aside class="w-full md:w-64 bg-white border-r border-slate-200 flex-shrink-0">
-      <div class="p-6 border-b border-slate-100 flex flex-col items-center text-center">
-        <i class="fa-solid fa-music text-3xl text-brand-red mb-2"></i>
-        <h1 class="text-lg font-bold text-brand-red uppercase leading-tight">Filarmônica</h1>
-        <p class="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Francisco Batista dos Santos Lula</p>
-      </div>
+    <div class="min-h-screen flex flex-col md:flex-row">
 
-      <nav class="space-y-1">
-        <!-- Início -->
-        <a href="{{ url_for('dashboard') }}" 
-           class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors {{ 'bg-red-900 text-white' if request.endpoint == 'dashboard' else 'text-slate-700 hover:bg-slate-100' }}">
-            <i class="fa-solid fa-house"></i>
+      <!-- Sidebar / Menu Lateral -->
+      <aside class="w-full md:w-64 bg-white/95 backdrop-blur-sm border-r border-slate-200 flex-shrink-0 shadow-sm">
+        <div class="p-6 border-b border-slate-100 flex flex-col items-center text-center">
+          <div class="w-16 h-16 bg-gradient-to-r from-brand-red to-red-700 rounded-full flex items-center justify-center mb-3 shadow-lg">
+            <i class="fa-solid fa-music text-white text-2xl"></i>
+          </div>
+          <h1 class="text-lg font-bold text-slate-800 tracking-tight">Filarmônica</h1>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Francisco Batista dos Santos Lula</p>
+        </div>
+
+        <nav class="space-y-1 px-4">
+          <!-- Início -->
+          <a href="{{ url_for('dashboard') }}"
+             class="sidebar-link {{ 'active' if request.endpoint == 'dashboard' else '' }}">
+            <i class="fa-solid fa-house w-5"></i>
             <span>Início</span>
-        </a>
-    
-        <!-- Cadastro de alunos -->
-        <a href="{{ url_for('novo_aluno') }}" 
-           class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors {{ 'bg-red-900 text-white' if request.endpoint in ['novo_aluno', 'listar_alunos'] else 'text-slate-700 hover:bg-slate-100' }}">
-            <i class="fa-solid fa-user-plus"></i>
-            <span>Cadastro de alunos</span>
-        </a>
-    
-        <!-- Cadastro de instrumentos -->
-        <a href="{{ url_for('novo_instrumento') }}" 
-           class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors {{ 'bg-red-900 text-white' if request.endpoint in ['novo_instrumento', 'listar_instrumentos'] else 'text-slate-700 hover:bg-slate-100' }}">
-            <i class="fa-solid fa-guitar"></i>
-            <span>Cadastro de instrumentos</span>
-        </a>
-    
-        <!-- Cadastrar Empréstimo -->
-        <a href="{{ url_for('novo_emprestimo') }}" 
-           class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors {{ 'bg-red-900 text-white' if request.endpoint == 'novo_emprestimo' else 'text-slate-700 hover:bg-slate-100' }}">
-            <i class="fa-solid fa-file-circle-plus"></i>
-            <span>Cadastrar empréstimo</span>
-        </a>
-    
-        <!-- Histórico de Empréstimos -->
-        <a href="{{ url_for('listar_emprestimos') }}" 
-           class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors {{ 'bg-red-900 text-white' if request.endpoint == 'listar_emprestimos' else 'text-slate-700 hover:bg-slate-100' }}">
-            <i class="fa-solid fa-handshake"></i>
-            <span>Histórico de empréstimos</span>
-        </a>
-    
-        <!-- Eventos -->
-        <a href="{{ url_for('novo_evento') }}" 
-           class="flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-colors {{ 'bg-red-900 text-white' if request.endpoint in ['novo_evento', 'listar_eventos'] else 'text-slate-700 hover:bg-slate-100' }}">
-            <i class="fa-solid fa-calendar-days"></i>
-            <span>Eventos</span>
-        </a>
-    </nav>
+          </a>
 
-        <div class="pt-6">
+          <!-- Cadastro de alunos -->
+          <a href="{{ url_for('novo_aluno') }}"
+             class="sidebar-link {{ 'active' if request.endpoint in ['novo_aluno', 'listar_alunos'] else '' }}">
+            <i class="fa-solid fa-user-plus w-5"></i>
+            <span>Cadastro de alunos</span>
+          </a>
+
+          <!-- Cadastro de instrumentos -->
+          <a href="{{ url_for('novo_instrumento') }}"
+             class="sidebar-link {{ 'active' if request.endpoint in ['novo_instrumento', 'listar_instrumentos'] else '' }}">
+            <i class="fa-solid fa-guitar w-5"></i>
+            <span>Instrumentos</span>
+          </a>
+
+          <!-- Cadastrar Empréstimo -->
+          <a href="{{ url_for('novo_emprestimo') }}"
+             class="sidebar-link {{ 'active' if request.endpoint == 'novo_emprestimo' else '' }}">
+            <i class="fa-solid fa-file-circle-plus w-5"></i>
+            <span>Novo empréstimo</span>
+          </a>
+
+          <!-- Histórico de Empréstimos -->
+          <a href="{{ url_for('listar_emprestimos') }}"
+             class="sidebar-link {{ 'active' if request.endpoint == 'listar_emprestimos' else '' }}">
+            <i class="fa-solid fa-handshake w-5"></i>
+            <span>Empréstimos</span>
+          </a>
+
+          <!-- Eventos -->
+          <a href="{{ url_for('novo_evento') }}"
+             class="sidebar-link {{ 'active' if request.endpoint in ['novo_evento', 'listar_eventos'] else '' }}">
+            <i class="fa-solid fa-calendar-days w-5"></i>
+            <span>Eventos</span>
+          </a>
+        </nav>
+
+        <div class="p-4 border-t border-slate-100">
           <form action="{{ url_for('logout') }}" method="POST">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="w-full flex items-center px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium transition">
-              <i class="fa-solid fa-arrow-right-from-bracket w-6 text-lg"></i>
+            <button type="submit" class="btn-logout">
+              <i class="fa-solid fa-arrow-right-from-bracket"></i>
               <span>Sair do sistema</span>
             </button>
           </form>
         </div>
-      </nav>
-    </aside>
+      </aside>
 
-    <!-- Área Principal de Conteúdo -->
-    <main class="flex-1 p-4 md:p-8 overflow-y-auto">
-      
-      <!-- Mensagens Flash -->
-      {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-          <div class="mb-6 space-y-2">
-            {% for category, message in messages %}
-              <div class="p-4 rounded-lg text-sm font-semibold border {% if category == 'success' %}bg-green-50 text-green-800 border-green-200{% elif category == 'danger' %}bg-red-50 text-red-800 border-red-200{% else %}bg-blue-50 text-blue-800 border-blue-200{% endif %}">
-                {{ message }}
-              </div>
-            {% endfor %}
+      <!-- Área Principal de Conteúdo -->
+      <main class="flex-1 p-4 md:p-8 overflow-y-auto bg-slate-50">
+
+        <!-- Mensagens Flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="mb-6 space-y-3">
+              {% for category, message in messages %}
+                <div class="p-4 rounded-xl text-sm font-semibold border-l-4 animate-fadeInUp {% if category == 'success' %}bg-green-50 text-green-800 border-green-500{% elif category == 'danger' %}bg-red-50 text-red-800 border-red-500{% elif category == 'warning' %}bg-yellow-50 text-yellow-800 border-yellow-500{% else %}bg-blue-50 text-blue-800 border-blue-500{% endif %}">
+                  {{ message }}
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        {% if error_message %}
+          <div class="p-6 bg-red-50 text-red-700 rounded-xl border-l-4 border-red-500 mb-6 font-bold animate-fadeInUp">
+            {{ error_message }}
           </div>
         {% endif %}
-      {% endwith %}
 
-      {% if error_message %}
-        <div class="p-6 bg-red-50 text-red-700 rounded-xl border border-red-200 mb-6 font-bold">
-          {{ error_message }}
-        </div>
-      {% endif %}
-
-      {% block content %}{% endblock %}
-    </main>
-  </div>
+        {% block content %}{% endblock %}
+      </main>
+    </div>
   {% else %}
     {% block auth_content %}{% endblock %}
   {% endif %}
 
-{% block scripts %}{% endblock %}
+  {% block scripts %}{% endblock %}
 </body>
 </html>
