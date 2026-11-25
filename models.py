@@ -10,6 +10,7 @@ class Usuario(db.Model):
     nome = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     senha_hash = db.Column(db.String(255), nullable=False)
+    role = db.Column(db.String(20), default='usuario', nullable=False)
 
 # Tabela Evento
 class Evento(db.Model):

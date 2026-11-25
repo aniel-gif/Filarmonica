@@ -29,7 +29,9 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "pool_pre_ping": True,
     "pool_recycle": 300,
 }
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'filarmonica-secret-key-123456')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+if not app.config['SECRET_KEY']:
+    raise RuntimeError("SECRET_KEY environment variable must be set")
 
 db.init_app(app)
 csrf = CSRFProtect(app)
@@ -38,15 +40,18 @@ csrf = CSRFProtect(app)
 with app.app_context():
     db.create_all()
     if not Usuario.query.filter_by(email='admin@filarmonica.org').first():
-        senha_admin = os.getenv('ADMIN_DEFAULT_PASSWORD', secrets.token_urlsafe(16))
+        senha_admin = os.getenv('ADMIN_DEFAULT_PASSWORD')
+        if not senha_admin:
+            raise RuntimeError("ADMIN_DEFAULT_PASSWORD environment variable must be set")
         admin = Usuario(
             nome='Administrador',
             email='admin@filarmonica.org',
-            senha_hash=generate_password_hash(senha_admin)
+            senha_hash=generate_password_hash(senha_admin),
+            role='admin'
         )
         db.session.add(admin)
         db.session.commit()
-        print("-> Usuário padrão verificado/criado. Senha gerada e registrada.")
+        print("-> Usuário padrão verificado/criado. Senha pré-definida registrada.")
 
 def login_required(f):
     @wraps(f)
@@ -54,6 +59,20 @@ def login_required(f):
         if 'usuario_id' not in session:
             flash('Por favor, faça login para aceder a esta página.', 'warning')
             return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'usuario_id' not in session:
+            flash('Por favor, faça login para aceder a esta página.', 'warning')
+            return redirect(url_for('login'))
+        user = Usuario.query.get(session['usuario_id'])
+        if user.role != 'admin':
+            flash('Acesso restrito aos administradores.', 'danger')
+            return redirect(url_for('dashboard'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -109,6 +128,7 @@ def login():
         if user and check_password_hash(user.senha_hash, form.senha.data):
             session['usuario_id'] = user.id
             session['usuario_nome'] = user.nome
+            session['usuario_role'] = user.role
 
             # Verifica se é um aluno vinculado
             aluno_perfil = Aluno.query.filter_by(usuario_id=user.id).first()
@@ -174,19 +194,27 @@ def esqueci_minha_senha():
                 'expiry': time.time() + TOKEN_EXPIRY_SECONDS
             }
             # Em produção, enviar email real
-            # Por enquanto, armazenamos na sessão e mostramos o token
+            # Armazena o token na sessão do usuário (não exposto na URL nem em flash)
             session['recovery_email'] = form.email.data
-            flash(f'Código de recuperação: {token} (copie e cole na tela seguinte). Válido por 15 minutos.', 'info')
-            return redirect(url_for('recuperar_senha', token=token))
+            session['recovery_token'] = token
+            flash('Um código de recuperação foi gerado. Verifique o e-mail cadastrado e cole o código na tela seguinte.', 'info')
+            return redirect(url_for('recuperar_senha'))
 
         flash('Se o e-mail existir na base de dados, um código foi enviado.', 'info')
     return render_template('esqueci_senha.html', form=form)
 
 
-@app.route('/recuperar-senha/<token>', methods=['GET', 'POST'])
-def recuperar_senha(token):
+@app.route('/recuperar-senha', methods=['GET', 'POST'])
+def recuperar_senha():
     # Uso atômico: get() e remoção em uma operação
-    token_data = recovery_tokens.pop(token, None)
+    token = session.get('recovery_token')
+    if token:
+        token_data = recovery_tokens.pop(token, None)
+        # Limpa o token da sessão após uso
+        session.pop('recovery_token', None)
+    else:
+        flash('Token inválido ou expirado.', 'danger')
+        return redirect(url_for('esqueci_minha_senha'))
 
     if token_data is None:
         flash('Token inválido ou expirado.', 'danger')
@@ -222,6 +250,7 @@ def cleanup_tokens():
 
 @app.route('/dashboard')
 @login_required
+@admin_required
 def dashboard():
     total_alunos = Aluno.query.count()
     total_instrumentos = Instrumento.query.count()
@@ -243,6 +272,7 @@ def dashboard():
 
 @app.route('/alunos/novo', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def novo_aluno():
     form = AlunoForm()
     if form.validate_on_submit():
@@ -266,12 +296,14 @@ def novo_aluno():
 
 @app.route('/alunos')
 @login_required
+@admin_required
 def listar_alunos():
     alunos = Aluno.query.all()
     return render_template('alunos_list.html', alunos=alunos)
 
 @app.route('/alunos/deletar/<int:id>', methods=['POST'])
 @login_required
+@admin_required
 def aluno_deletar(id):
     aluno = Aluno.query.get_or_404(id)
     db.session.delete(aluno)
@@ -281,6 +313,7 @@ def aluno_deletar(id):
 
 @app.route('/instrumentos/novo', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def novo_instrumento():
     form = InstrumentoForm()
     if form.validate_on_submit():
@@ -308,6 +341,7 @@ def novo_instrumento():
 
 @app.route('/instrumentos')
 @login_required
+@admin_required
 def listar_instrumentos():
     instrumentos = Instrumento.query.all()
     return render_template('instrumentos_list.html', instrumentos=instrumentos)
@@ -323,6 +357,7 @@ def instrumento_deletar(id):
 
 @app.route('/emprestimos/novo', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def novo_emprestimo():
     form = EmprestimoForm()
     form.aluno_id.choices = [(a.id, a.nome) for a in Aluno.query.order_by('nome').all()]
@@ -359,6 +394,7 @@ def listar_emprestimos():
 
 @app.route('/eventos/novo', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def novo_evento():
     form = EventoForm()
     if form.validate_on_submit():
@@ -386,6 +422,7 @@ def novo_evento():
 
 @app.route('/eventos')
 @login_required
+@admin_required
 def listar_eventos():
     eventos = Evento.query.filter_by(usuario_id=session['usuario_id']).all()
     return render_template('eventos_list.html', eventos=eventos)
@@ -404,6 +441,7 @@ def aluno_dashboard():
 
 @app.route('/emprestimos/deletar/<int:id>', methods=['POST'])
 @login_required
+@admin_required
 def emprestimo_deletar(id):
     emprestimo = Emprestimo.query.get_or_404(id)
     inst = Instrumento.query.get(emprestimo.instrumento_id)
@@ -412,6 +450,21 @@ def emprestimo_deletar(id):
     db.session.delete(emprestimo)
     db.session.commit()
     flash('Empréstimo excluído com sucesso!', 'success')
+    return redirect(url_for('listar_emprestimos'))
+
+
+@app.route('/emprestimos/cancelar/<int:id>', methods=['POST'])
+@login_required
+@admin_required
+def emprestimo_cancelar(id):
+    emprestimo = Emprestimo.query.get_or_404(id)
+    # Apenas cancela se estiver em andamento
+    if emprestimo.status == 'Em andamento':
+        emprestimo.status = 'Disponível'
+        db.session.commit()
+        flash('Empréstimo cancelado com sucesso!', 'success')
+    else:
+        flash('Este empréstimo não pode ser cancelado (já concluído ou em outro status).', 'warning')
     return redirect(url_for('listar_emprestimos'))
 
 if __name__ == '__main__':
