@@ -42,7 +42,8 @@ with app.app_context():
         admin = Usuario(
             nome='Administrador',
             email='admin@filarmonica.org',
-            senha_hash=generate_password_hash(senha_admin)
+            senha_hash=generate_password_hash(senha_admin),
+            role='admin'
         )
         db.session.add(admin)
         db.session.commit()
@@ -54,6 +55,20 @@ def login_required(f):
         if 'usuario_id' not in session:
             flash('Por favor, faça login para aceder a esta página.', 'warning')
             return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'usuario_id' not in session:
+            flash('Por favor, faça login para aceder a esta página.', 'warning')
+            return redirect(url_for('login'))
+        user = Usuario.query.get(session['usuario_id'])
+        if user.role != 'admin':
+            flash('Acesso restrito aos administradores.', 'danger')
+            return redirect(url_for('dashboard'))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -109,6 +124,7 @@ def login():
         if user and check_password_hash(user.senha_hash, form.senha.data):
             session['usuario_id'] = user.id
             session['usuario_nome'] = user.nome
+            session['usuario_role'] = user.role
 
             # Verifica se é um aluno vinculado
             aluno_perfil = Aluno.query.filter_by(usuario_id=user.id).first()
@@ -222,6 +238,7 @@ def cleanup_tokens():
 
 @app.route('/dashboard')
 @login_required
+@admin_required
 def dashboard():
     total_alunos = Aluno.query.count()
     total_instrumentos = Instrumento.query.count()
@@ -243,6 +260,7 @@ def dashboard():
 
 @app.route('/alunos/novo', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def novo_aluno():
     form = AlunoForm()
     if form.validate_on_submit():
@@ -266,12 +284,14 @@ def novo_aluno():
 
 @app.route('/alunos')
 @login_required
+@admin_required
 def listar_alunos():
     alunos = Aluno.query.all()
     return render_template('alunos_list.html', alunos=alunos)
 
 @app.route('/alunos/deletar/<int:id>', methods=['POST'])
 @login_required
+@admin_required
 def aluno_deletar(id):
     aluno = Aluno.query.get_or_404(id)
     db.session.delete(aluno)
@@ -281,6 +301,7 @@ def aluno_deletar(id):
 
 @app.route('/instrumentos/novo', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def novo_instrumento():
     form = InstrumentoForm()
     if form.validate_on_submit():
@@ -308,6 +329,7 @@ def novo_instrumento():
 
 @app.route('/instrumentos')
 @login_required
+@admin_required
 def listar_instrumentos():
     instrumentos = Instrumento.query.all()
     return render_template('instrumentos_list.html', instrumentos=instrumentos)
@@ -323,6 +345,7 @@ def instrumento_deletar(id):
 
 @app.route('/emprestimos/novo', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def novo_emprestimo():
     form = EmprestimoForm()
     form.aluno_id.choices = [(a.id, a.nome) for a in Aluno.query.order_by('nome').all()]
@@ -359,6 +382,7 @@ def listar_emprestimos():
 
 @app.route('/eventos/novo', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def novo_evento():
     form = EventoForm()
     if form.validate_on_submit():
@@ -386,6 +410,7 @@ def novo_evento():
 
 @app.route('/eventos')
 @login_required
+@admin_required
 def listar_eventos():
     eventos = Evento.query.filter_by(usuario_id=session['usuario_id']).all()
     return render_template('eventos_list.html', eventos=eventos)
@@ -404,6 +429,7 @@ def aluno_dashboard():
 
 @app.route('/emprestimos/deletar/<int:id>', methods=['POST'])
 @login_required
+@admin_required
 def emprestimo_deletar(id):
     emprestimo = Emprestimo.query.get_or_404(id)
     inst = Instrumento.query.get(emprestimo.instrumento_id)

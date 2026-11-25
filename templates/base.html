@@ -36,11 +36,13 @@
           </a>
 
           <!-- Cadastro de alunos -->
+          {% if session.get('usuario_role') == 'admin' %}
           <a href="{{ url_for('novo_aluno') }}"
              class="sidebar-link {{ 'active' if request.endpoint in ['novo_aluno', 'listar_alunos'] else '' }}">
             <i class="fa-solid fa-user-plus w-5"></i>
             <span>Cadastro de alunos</span>
           </a>
+          {% endif %}
 
           <!-- Cadastro de instrumentos -->
           <a href="{{ url_for('novo_instrumento') }}"
@@ -64,11 +66,13 @@
           </a>
 
           <!-- Eventos -->
+          {% if session.get('usuario_role') == 'admin' %}
           <a href="{{ url_for('novo_evento') }}"
              class="sidebar-link {{ 'active' if request.endpoint in ['novo_evento', 'listar_eventos'] else '' }}">
             <i class="fa-solid fa-calendar-days w-5"></i>
             <span>Eventos</span>
           </a>
+          {% endif %}
         </nav>
 
         <div class="p-4 border-t border-slate-100">
