@@ -42,12 +42,20 @@
               </span>
             </td>
             <td class="p-4">
-              <form action="{{ url_for('emprestimo_deletar', id=emp.id) }}" method="POST" style="display:inline" onsubmit="return confirm('Deseja excluir este empréstimo?')">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="text-red-600 hover:text-red-800 transition-colors">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
-              </form>
+              <div class="inline-flex items-center gap-2">
+                <form action="{{ url_for('emprestimo_cancelar', id=emp.id) }}" method="POST" style="display:inline" onsubmit="return confirm('Deseja cancelar este empréstimo?')">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="text-red-600 hover:text-red-800 transition-colors bg-red-100/20 rounded-md px-2 py-1 text-sm font-medium">
+                    Cancelar
+                  </button>
+                </form>
+                <form action="{{ url_for('emprestimo_deletar', id=emp.id) }}" method="POST" style="display:inline" onsubmit="return confirm('Deseja excluir este empréstimo?')">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button type="submit" class="text-red-600 hover:text-red-800 transition-colors">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </form>
+              </div>
             </td>
           </tr>
           {% else %}

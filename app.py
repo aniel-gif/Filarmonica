@@ -29,7 +29,9 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     "pool_pre_ping": True,
     "pool_recycle": 300,
 }
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'filarmonica-secret-key-123456')
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
+if not app.config['SECRET_KEY']:
+    raise RuntimeError("SECRET_KEY environment variable must be set")
 
 db.init_app(app)
 csrf = CSRFProtect(app)
@@ -38,7 +40,9 @@ csrf = CSRFProtect(app)
 with app.app_context():
     db.create_all()
     if not Usuario.query.filter_by(email='admin@filarmonica.org').first():
-        senha_admin = os.getenv('ADMIN_DEFAULT_PASSWORD', secrets.token_urlsafe(16))
+        senha_admin = os.getenv('ADMIN_DEFAULT_PASSWORD')
+        if not senha_admin:
+            raise RuntimeError("ADMIN_DEFAULT_PASSWORD environment variable must be set")
         admin = Usuario(
             nome='Administrador',
             email='admin@filarmonica.org',
@@ -47,7 +51,7 @@ with app.app_context():
         )
         db.session.add(admin)
         db.session.commit()
-        print("-> Usuário padrão verificado/criado. Senha gerada e registrada.")
+        print("-> Usuário padrão verificado/criado. Senha pré-definida registrada.")
 
 def login_required(f):
     @wraps(f)
@@ -190,19 +194,27 @@ def esqueci_minha_senha():
                 'expiry': time.time() + TOKEN_EXPIRY_SECONDS
             }
             # Em produção, enviar email real
-            # Por enquanto, armazenamos na sessão e mostramos o token
+            # Armazena o token na sessão do usuário (não exposto na URL nem em flash)
             session['recovery_email'] = form.email.data
-            flash(f'Código de recuperação: {token} (copie e cole na tela seguinte). Válido por 15 minutos.', 'info')
-            return redirect(url_for('recuperar_senha', token=token))
+            session['recovery_token'] = token
+            flash('Um código de recuperação foi gerado. Verifique o e-mail cadastrado e cole o código na tela seguinte.', 'info')
+            return redirect(url_for('recuperar_senha'))
 
         flash('Se o e-mail existir na base de dados, um código foi enviado.', 'info')
     return render_template('esqueci_senha.html', form=form)
 
 
-@app.route('/recuperar-senha/<token>', methods=['GET', 'POST'])
-def recuperar_senha(token):
+@app.route('/recuperar-senha', methods=['GET', 'POST'])
+def recuperar_senha():
     # Uso atômico: get() e remoção em uma operação
-    token_data = recovery_tokens.pop(token, None)
+    token = session.get('recovery_token')
+    if token:
+        token_data = recovery_tokens.pop(token, None)
+        # Limpa o token da sessão após uso
+        session.pop('recovery_token', None)
+    else:
+        flash('Token inválido ou expirado.', 'danger')
+        return redirect(url_for('esqueci_minha_senha'))
 
     if token_data is None:
         flash('Token inválido ou expirado.', 'danger')
@@ -438,6 +450,21 @@ def emprestimo_deletar(id):
     db.session.delete(emprestimo)
     db.session.commit()
     flash('Empréstimo excluído com sucesso!', 'success')
+    return redirect(url_for('listar_emprestimos'))
+
+
+@app.route('/emprestimos/cancelar/<int:id>', methods=['POST'])
+@login_required
+@admin_required
+def emprestimo_cancelar(id):
+    emprestimo = Emprestimo.query.get_or_404(id)
+    # Apenas cancela se estiver em andamento
+    if emprestimo.status == 'Em andamento':
+        emprestimo.status = 'Disponível'
+        db.session.commit()
+        flash('Empréstimo cancelado com sucesso!', 'success')
+    else:
+        flash('Este empréstimo não pode ser cancelado (já concluído ou em outro status).', 'warning')
     return redirect(url_for('listar_emprestimos'))
 
 if __name__ == '__main__':
