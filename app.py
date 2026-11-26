@@ -39,7 +39,26 @@ csrf = CSRFProtect(app)
 # Inicialização do Banco de Dados para Produção
 with app.app_context():
     db.create_all()
-    if not Usuario.query.filter_by(email='admin@filarmonica.org').first():
+
+    # Migração automática de colunas para tabelas já existentes
+    from sqlalchemy import inspect, text
+    inspector = inspect(db.engine)
+    if inspector.has_table('usuarios'):
+        colunas_usuarios = [c['name'] for c in inspector.get_columns('usuarios')]
+        if 'role' not in colunas_usuarios:
+            db.session.execute(text("ALTER TABLE usuarios ADD COLUMN role VARCHAR(20) DEFAULT 'usuario' NOT NULL"))
+            db.session.commit()
+            print("-> Coluna 'role' adicionada à tabela 'usuarios'.")
+
+    if inspector.has_table('alunos'):
+        colunas_alunos = [c['name'] for c in inspector.get_columns('alunos')]
+        if 'usuario_id' not in colunas_alunos:
+            db.session.execute(text("ALTER TABLE alunos ADD COLUMN usuario_id INTEGER REFERENCES usuarios(id)"))
+            db.session.commit()
+            print("-> Coluna 'usuario_id' adicionada à tabela 'alunos'.")
+
+    admin_user = Usuario.query.filter_by(email='admin@filarmonica.org').first()
+    if not admin_user:
         senha_admin = os.getenv('ADMIN_DEFAULT_PASSWORD')
         if not senha_admin:
             raise RuntimeError("ADMIN_DEFAULT_PASSWORD environment variable must be set")
@@ -52,6 +71,10 @@ with app.app_context():
         db.session.add(admin)
         db.session.commit()
         print("-> Usuário padrão verificado/criado. Senha pré-definida registrada.")
+    elif admin_user.role != 'admin':
+        admin_user.role = 'admin'
+        db.session.commit()
+        print("-> Permissão de administrador atualizada para o usuário padrão.")
 
 def login_required(f):
     @wraps(f)
