@@ -513,7 +513,10 @@ def emprestimo_cancelar(id):
 
     # Apenas cancela se estiver em andamento
     if emprestimo.status == 'Em andamento':
-        emprestimo.status = 'Disponível'
+        inst = Instrumento.query.get(emprestimo.instrumento_id)
+        if inst:
+            inst.status = 'Disponível'
+        emprestimo.status = 'Cancelado'
         db.session.commit()
         flash('Empréstimo cancelado com sucesso!', 'success')
     else:
