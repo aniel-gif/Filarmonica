@@ -70,7 +70,7 @@ class AlunoRegistroForm(FlaskForm):
 
 class InstrumentoForm(FlaskForm):
     nome = StringField('Nome do Instrumento', validators=[DataRequired()])
-    tombamento = StringField('Código do Instrumento')
+    tombamento = StringField('Código do Instrumento', validators=[DataRequired()])
     identificacao = StringField('Identificação do instrumento')
     modelo = StringField('Modelo')
     categoria = SelectField('Categoria', choices=[

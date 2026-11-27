@@ -337,6 +337,13 @@ def listar_alunos():
 @admin_required
 def aluno_deletar(id):
     aluno = Aluno.query.get_or_404(id)
+
+    # Verifica se o aluno tem empréstimos ativos
+    emprestimos_ativos = Emprestimo.query.filter_by(aluno_id=aluno.id, status='Em andamento').all()
+    if emprestimos_ativos:
+        flash('Não é possível excluir este aluno pois ele possui empréstimos ativos. Devolva os instrumentos primeiro.', 'danger')
+        return redirect(url_for('listar_alunos'))
+
     db.session.delete(aluno)
     db.session.commit()
     flash('Aluno excluído com sucesso!', 'success')
