@@ -93,15 +93,21 @@ def admin_required(f):
             flash('Por favor, faça login para aceder a esta página.', 'warning')
             return redirect(url_for('login'))
         user = Usuario.query.get(session['usuario_id'])
-        if user.role != 'admin':
+        if not user or user.role != 'admin':
             flash('Acesso restrito aos administradores.', 'danger')
-            return redirect(url_for('dashboard'))
+            # Evita loop de redirecionamento: envia o aluno para o seu painel
+            if 'aluno_id' in session:
+                return redirect(url_for('aluno_dashboard'))
+            session.clear()
+            return redirect(url_for('login'))
         return f(*args, **kwargs)
     return decorated_function
 
 @app.route('/')
 def index():
     if 'usuario_id' in session:
+        if 'aluno_id' in session:
+            return redirect(url_for('aluno_dashboard'))
         return redirect(url_for('dashboard'))
     return redirect(url_for('login'))
 
