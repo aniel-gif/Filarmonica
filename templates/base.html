@@ -45,7 +45,7 @@
           {% endif %}
 
           <!-- Cadastro de instrumentos -->
-          <a href="{{ url_for('novo_instrumento') }}"
+          <a href="{{ url_for('listar_instrumentos') }}"
              class="sidebar-link {{ 'active' if request.endpoint in ['novo_instrumento', 'listar_instrumentos'] else '' }}">
             <i class="fa-solid fa-guitar w-5"></i>
             <span>Instrumentos</span>
