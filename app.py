@@ -425,17 +425,17 @@ def novo_emprestimo():
 @app.route('/emprestimos')
 @login_required
 def listar_emprestimos():
-    user_role = session.get('usuario_role')
-    # Verify aluno_id from database to prevent session tampering
+    # Verify user role and aluno_id from database to prevent session tampering
+    user = Usuario.query.get(session.get('usuario_id'))
     aluno_perfil = Aluno.query.filter_by(usuario_id=session.get('usuario_id')).first()
     aluno_id = aluno_perfil.id if aluno_perfil else None
 
-    if user_role == 'admin':
+    if user and user.role == 'admin':
         emprestimos = Emprestimo.query.all()
     else:
         # Alunos comuns veem apenas os próprios empréstimos
         emprestimos = Emprestimo.query.filter_by(aluno_id=aluno_id).all()
-    return render_template('emprestimos_list.html', emprestimos=emprestimos, is_admin=(user_role == 'admin'))
+    return render_template('emprestimos_list.html', emprestimos=emprestimos, is_admin=user and user.role == 'admin')
 
 @app.route('/eventos/novo', methods=['GET', 'POST'])
 @login_required
