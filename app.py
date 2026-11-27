@@ -364,13 +364,18 @@ def novo_instrumento():
 
 @app.route('/instrumentos')
 @login_required
-@admin_required
 def listar_instrumentos():
-    instrumentos = Instrumento.query.all()
-    return render_template('instrumentos_list.html', instrumentos=instrumentos)
+    user_role = session.get('usuario_role')
+    if user_role == 'admin':
+        instrumentos = Instrumento.query.all()
+    else:
+        # Alunos comuns veem apenas instrumentos disponíveis
+        instrumentos = Instrumento.query.filter_by(status='Disponível').all()
+    return render_template('instrumentos_list.html', instrumentos=instrumentos, is_admin=(user_role == 'admin'))
 
 @app.route('/instrumentos/deletar/<int:id>', methods=['POST'])
 @login_required
+@admin_required
 def instrumento_deletar(id):
     instrumento = Instrumento.query.get_or_404(id)
     db.session.delete(instrumento)
@@ -458,9 +463,13 @@ def aluno_dashboard():
 
     aluno = Aluno.query.get_or_404(session['aluno_id'])
     emprestimos = Emprestimo.query.filter_by(aluno_id=aluno.id).all()
-    eventos = Evento.query.order_by(Evento.data.asc()).all()
+    hoje = datetime.now().date()
+    # Alunos comuns veem apenas eventos próximos (futuro), com detalhes
+    eventos = Evento.query.filter(Evento.data >= hoje).order_by(Evento.data.asc()).all()
+    # Alunos comuns veem apenas instrumentos disponíveis para empréstimo
+    instrumentos_disponiveis = Instrumento.query.filter_by(status='Disponível').all()
 
-    return render_template('aluno_dashboard.html', aluno=aluno, emprestimos=emprestimos, eventos=eventos, now=datetime.now().date())
+    return render_template('aluno_dashboard.html', aluno=aluno, emprestimos=emprestimos, eventos=eventos, instrumentos_disponiveis=instrumentos_disponiveis, now=hoje)
 
 @app.route('/emprestimos/deletar/<int:id>', methods=['POST'])
 @login_required

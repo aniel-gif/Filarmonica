@@ -2,6 +2,7 @@
 
 {% block content %}
 <div class="space-y-8">
+
   <!-- Cabeçalho do Aluno -->
   <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 animate-fadeInUp">
     <div class="flex items-center gap-6">
@@ -23,7 +24,6 @@
         Meus Empréstimos
       </h3>
     </div>
-
     <div class="overflow-x-auto">
       <table class="w-full text-left text-sm border-collapse">
         <thead>
@@ -64,7 +64,6 @@
         Próximos Eventos
       </h3>
     </div>
-
     <div class="overflow-x-auto">
       <table class="w-full text-left text-sm border-collapse">
         <thead>
@@ -81,7 +80,7 @@
             <td class="p-4 font-semibold text-slate-800">{{ evt.titulo }}</td>
             <td class="p-4 text-slate-600">{{ evt.data.strftime('%d/%m/%Y') if evt.data else '-' }}</td>
             <td class="p-4 text-slate-500">{{ evt.horario }}</td>
-            <td class="p-4 text-slate-500">{{ evt.local }}</td>
+            <td class="p-4 text-slate-600">{{ evt.local }}</td>
           </tr>
           {% else %}
           <tr>
@@ -92,15 +91,48 @@
       </table>
     </div>
   </div>
-</div>
 
-<style>
-  @keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .animate-fadeInUp {
-    animation: fadeInUp 0.5s ease-out forwards;
-  }
-</style>
+  <!-- Instrumentos Disponíveis -->
+  <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-fadeInUp" style="--animation-delay: 0.7s">
+    <div class="p-5 border-b border-slate-100">
+      <h3 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+        <i class="fa-solid fa-guitar w-6 text-green-600"></i>
+        Instrumentos Disponíveis
+      </h3>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm border-collapse">
+        <thead>
+          <tr class="bg-slate-50 text-slate-500 uppercase font-semibold">
+            <th class="p-4">Código</th>
+            <th class="p-4">Nome</th>
+            <th class="p-4">Modelo</th>
+            <th class="p-4">Categoria</th>
+            <th class="p-4">Status</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {% for i in instrumentos_disponiveis %}
+          <tr class="hover:bg-slate-50 transition-colors duration-150">
+            <td class="p-4 font-semibold text-slate-800">{{ i.codigo }}</td>
+            <td class="p-4 font-semibold text-slate-800">{{ i.nome }}</td>
+            <td class="p-4 text-slate-600">{{ i.modelo or '-' }}</td>
+            <td class="p-4 text-slate-600">{{ i.categoria }}</td>
+            <td class="p-4">
+              <span class="px-3 py-1 text-xs font-bold rounded-full {% if i.status == 'Disponível' %}bg-emerald-100 text-emerald-700{% else %}bg-red-100 text-red-700{% endif %}">
+                {{ i.status }}
+              </span>
+            </td>
+          </tr>
+          {% else %}
+          <tr>
+            <td colspan="5" class="p-8 text-center text-slate-400">Nenhum instrumento disponível.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
 {% endblock %}

@@ -52,11 +52,13 @@
           </a>
 
           <!-- Cadastrar Empréstimo -->
+          {% if session.get('usuario_role') == 'admin' %}
           <a href="{{ url_for('novo_emprestimo') }}"
              class="sidebar-link {{ 'active' if request.endpoint == 'novo_emprestimo' else '' }}">
             <i class="fa-solid fa-file-circle-plus w-5"></i>
             <span>Novo empréstimo</span>
           </a>
+          {% endif %}
 
           <!-- Histórico de Empréstimos -->
           <a href="{{ url_for('listar_emprestimos') }}"
