@@ -506,13 +506,13 @@ def emprestimo_deletar(id):
 @login_required
 def emprestimo_cancelar(id):
     emprestimo = Emprestimo.query.get_or_404(id)
-    user_role = session.get('usuario_role')
-    # Verify aluno_id from database to prevent session tampering
+    # Verify user role and aluno_id from database to prevent session tampering
+    user = Usuario.query.get(session.get('usuario_id'))
     aluno_perfil = Aluno.query.filter_by(usuario_id=session.get('usuario_id')).first()
     aluno_id = aluno_perfil.id if aluno_perfil else None
 
     # Apenas admin ou o próprio dono do empréstimo podem cancelar
-    if user_role != 'admin' and emprestimo.aluno_id != aluno_id:
+    if not user or (user.role != 'admin' and emprestimo.aluno_id != aluno_id):
         flash('Você não tem permissão para cancelar este empréstimo.', 'danger')
         return redirect(url_for('listar_emprestimos'))
 
