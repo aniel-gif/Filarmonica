@@ -283,6 +283,7 @@ def dashboard():
 
     emprestimos_recentes = Emprestimo.query.order_by(Emprestimo.data_emprestimo.desc()).limit(5).all()
     eventos_agendados = Evento.query.order_by(Evento.data.asc()).limit(5).all()
+    instrumentos_detalhados = Instrumento.query.order_by(Instrumento.nome).all()
 
     return render_template('dashboard.html',
                            total_alunos=total_alunos,
@@ -291,7 +292,8 @@ def dashboard():
                            emprestimos_ativos=emprestimos_ativos,
                            proximos_eventos=proximos_eventos,
                            emprestimos_recentes=emprestimos_recentes,
-                           eventos_agendados=eventos_agendados)
+                           eventos_agendados=eventos_agendados,
+                           instrumentos_detalhados=instrumentos_detalhados)
 
 @app.route('/alunos/novo', methods=['GET', 'POST'])
 @login_required
