@@ -426,7 +426,10 @@ def novo_emprestimo():
 @login_required
 def listar_emprestimos():
     user_role = session.get('usuario_role')
-    aluno_id = session.get('aluno_id')
+    # Verify aluno_id from database to prevent session tampering
+    aluno_perfil = Aluno.query.filter_by(usuario_id=session.get('usuario_id')).first()
+    aluno_id = aluno_perfil.id if aluno_perfil else None
+
     if user_role == 'admin':
         emprestimos = Emprestimo.query.all()
     else:
@@ -504,7 +507,9 @@ def emprestimo_deletar(id):
 def emprestimo_cancelar(id):
     emprestimo = Emprestimo.query.get_or_404(id)
     user_role = session.get('usuario_role')
-    aluno_id = session.get('aluno_id')
+    # Verify aluno_id from database to prevent session tampering
+    aluno_perfil = Aluno.query.filter_by(usuario_id=session.get('usuario_id')).first()
+    aluno_id = aluno_perfil.id if aluno_perfil else None
 
     # Apenas admin ou o próprio dono do empréstimo podem cancelar
     if user_role != 'admin' and emprestimo.aluno_id != aluno_id:
