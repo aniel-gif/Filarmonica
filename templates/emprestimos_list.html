@@ -4,17 +4,19 @@
 <div class="space-y-8">
   <!-- Cabeçalho -->
   <div class="animate-fadeInUp">
-    <h1 class="text-3xl font-bold text-slate-800 mb-2">Histórico de Empréstimos</h1>
-    <p class="text-slate-500">Acompanhe os instrumentos atualmente emprestados e devoluções.</p>
+    <h1 class="text-3xl font-bold text-slate-800 mb-2">Meus Empréstimos</h1>
+    <p class="text-slate-500">Acompanhe os instrumentos que você pegou emprestado.</p>
   </div>
 
   <!-- Tabela de empréstimos -->
   <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden animate-fadeInUp">
     <div class="p-5 border-b border-slate-100 flex justify-between items-center">
       <h3 class="font-bold text-slate-800 text-lg">Lista de Empréstimos</h3>
+      {% if is_admin %}
       <a href="{{ url_for('novo_emprestimo') }}" class="bg-gradient-to-r from-brand-green to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-300 flex items-center gap-2">
         <i class="fa-solid fa-plus"></i> Novo Empréstimo
       </a>
+      {% endif %}
     </div>
 
     <div class="overflow-x-auto">
@@ -22,18 +24,24 @@
         <thead>
           <tr class="bg-slate-50 text-slate-500 uppercase font-semibold">
             <th class="p-4">Instrumento</th>
+            {% if is_admin %}
             <th class="p-4">Aluno</th>
+            {% endif %}
             <th class="p-4">Data Empréstimo</th>
             <th class="p-4">Previsão Devolução</th>
             <th class="p-4">Status</th>
+            {% if not is_admin %}
             <th class="p-4">Ações</th>
+            {% endif %}
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
           {% for emp in emprestimos %}
           <tr class="hover:bg-slate-50 transition-colors duration-150">
             <td class="p-4 font-semibold text-slate-800">{{ emp.instrumento.nome }}</td>
+            {% if is_admin %}
             <td class="p-4 text-slate-600">{{ emp.aluno.nome }}</td>
+            {% endif %}
             <td class="p-4 text-slate-500">{{ emp.data_emprestimo.strftime('%d/%m/%Y') if emp.data_emprestimo else '-' }}</td>
             <td class="p-4 text-slate-500">{{ emp.data_devolucao_prevista.strftime('%d/%m/%Y') if emp.data_devolucao_prevista else '-' }}</td>
             <td class="p-4">
@@ -41,22 +49,20 @@
                 {{ emp.status }}
               </span>
             </td>
+            {% if not is_admin %}
             <td class="p-4">
-              <div class="inline-flex items-center gap-2">
-                <form action="{{ url_for('emprestimo_cancelar', id=emp.id) }}" method="POST" style="display:inline" onsubmit="return confirm('Deseja cancelar este empréstimo?')">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                  <button type="submit" class="text-red-600 hover:text-red-800 transition-colors bg-red-100/20 rounded-md px-2 py-1 text-sm font-medium">
-                    Cancelar
-                  </button>
-                </form>
-                <form action="{{ url_for('emprestimo_deletar', id=emp.id) }}" method="POST" style="display:inline" onsubmit="return confirm('Deseja excluir este empréstimo?')">
-                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                  <button type="submit" class="text-red-600 hover:text-red-800 transition-colors">
-                    <i class="fa-solid fa-trash"></i>
-                  </button>
-                </form>
-              </div>
+              {% if emp.status == 'Em andamento' %}
+              <form action="{{ url_for('emprestimo_cancelar', id=emp.id) }}" method="POST" style="display:inline" onsubmit="return confirm('Deseja cancelar este empréstimo?')">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="text-red-600 hover:text-red-800 transition-colors bg-red-100/20 rounded-md px-2 py-1 text-sm font-medium">
+                  Cancelar
+                </button>
+              </form>
+              {% else %}
+              <span class="text-xs text-slate-400">Não pode ser cancelado</span>
+              {% endif %}
             </td>
+            {% endif %}
           </tr>
           {% else %}
           <tr>

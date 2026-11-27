@@ -425,8 +425,14 @@ def novo_emprestimo():
 @app.route('/emprestimos')
 @login_required
 def listar_emprestimos():
-    emprestimos = Emprestimo.query.all()
-    return render_template('emprestimos_list.html', emprestimos=emprestimos)
+    user_role = session.get('usuario_role')
+    aluno_id = session.get('aluno_id')
+    if user_role == 'admin':
+        emprestimos = Emprestimo.query.all()
+    else:
+        # Alunos comuns veem apenas os próprios empréstimos
+        emprestimos = Emprestimo.query.filter_by(aluno_id=aluno_id).all()
+    return render_template('emprestimos_list.html', emprestimos=emprestimos, is_admin=(user_role == 'admin'))
 
 @app.route('/eventos/novo', methods=['GET', 'POST'])
 @login_required
@@ -495,9 +501,16 @@ def emprestimo_deletar(id):
 
 @app.route('/emprestimos/cancelar/<int:id>', methods=['POST'])
 @login_required
-@admin_required
 def emprestimo_cancelar(id):
     emprestimo = Emprestimo.query.get_or_404(id)
+    user_role = session.get('usuario_role')
+    aluno_id = session.get('aluno_id')
+
+    # Apenas admin ou o próprio dono do empréstimo podem cancelar
+    if user_role != 'admin' and emprestimo.aluno_id != aluno_id:
+        flash('Você não tem permissão para cancelar este empréstimo.', 'danger')
+        return redirect(url_for('listar_emprestimos'))
+
     # Apenas cancela se estiver em andamento
     if emprestimo.status == 'Em andamento':
         emprestimo.status = 'Disponível'
