@@ -45,7 +45,7 @@
             <td class="p-4 text-slate-500">{{ emp.data_emprestimo.strftime('%d/%m/%Y') if emp.data_emprestimo else '-' }}</td>
             <td class="p-4 text-slate-500">{{ emp.data_devolucao_prevista.strftime('%d/%m/%Y') if emp.data_devolucao_prevista else '-' }}</td>
             <td class="p-4">
-              <span class="px-3 py-1 text-xs font-bold text-amber-700 bg-amber-100 rounded-full">
+              <span class="px-3 py-1 text-xs font-bold rounded-full {% if emp.status == 'Em andamento' %}bg-amber-100 text-amber-700{% elif emp.status == 'Cancelado' %}bg-red-100 text-red-700{% else %}bg-emerald-100 text-emerald-700{% endif %}">
                 {{ emp.status }}
               </span>
             </td>
@@ -66,7 +66,7 @@
           </tr>
           {% else %}
           <tr>
-            <td colspan="6" class="p-8 text-center text-slate-400">Nenhum empréstimo registrado no momento.</td>
+            <td colspan="{{ 6 if is_admin else 5 }}" class="p-8 text-center text-slate-400">Nenhum empréstimo registrado no momento.</td>
           </tr>
           {% endfor %}
         </tbody>
